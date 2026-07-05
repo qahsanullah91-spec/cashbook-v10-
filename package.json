@@ -2,7 +2,7 @@
   "name": "bawar-star-system-storage",
   "version": "2.0.0",
   "scripts": {
-    "dev": "cd frontend && npm run dev"
+    "dev": "cd frontend && npm install --prefer-offline && npm run dev"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.3",
