@@ -38,6 +38,8 @@ class DeploymentContractTests(unittest.TestCase):
             for route in app.routes
             if isinstance(route, APIRoute)
         }
+        # Debug: print all registered routes
+        print(f"\nRegistered routes: {sorted(route_paths)}")
         self.assertIn("/api/auth/status", route_paths)
 
     def test_neon_database_urls_use_installed_pg8000_driver(self):
