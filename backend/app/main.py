@@ -55,6 +55,30 @@ async def request_logging(request: Request, call_next):
     return response
 
 
+@app.get("/", include_in_schema=False)
+def root():
+    """Serve the built frontend if available; never return a raw 404 at root.
+
+    In development the Vite dev server (port 5173) serves the UI and proxies
+    /api requests here, so this route is only hit when the backend is accessed
+    directly. In production, Vercel routes non-/api paths to the static build.
+    """
+    from pathlib import Path
+    from fastapi.responses import FileResponse
+
+    dist_index = Path(__file__).resolve().parents[2] / "frontend" / "dist" / "index.html"
+    if dist_index.is_file():
+        return FileResponse(dist_index)
+    return JSONResponse(
+        {
+            "service": APP_NAME,
+            "status": "online",
+            "message": "API backend. The web UI is served by the frontend dev server (Vite) or the static production build.",
+            "health": "/api/health",
+        }
+    )
+
+
 @app.on_event("startup")
 def seed_settings():
     db = SessionLocal()

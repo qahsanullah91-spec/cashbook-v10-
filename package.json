@@ -2,7 +2,8 @@
   "name": "bawar-star-system-storage",
   "version": "2.0.0",
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail -n backend,frontend -c magenta,cyan \"python3.9 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload\" \"npm --prefix frontend run dev\""
+    "postinstall": "npm --prefix frontend install",
+    "dev": "concurrently -n backend,frontend -c magenta,cyan \"uv run uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload\" \"npm --prefix frontend run dev\""
   },
   "dependencies": {
     "googleapis": "144.0.0"
