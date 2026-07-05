@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from datetime import date as DateType, datetime
-from typing import Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
@@ -306,9 +308,9 @@ class SalarySummaryTotals(BaseModel):
 class SalaryReportResponse(BaseModel):
     month: int
     year: int
-    rows: list[SalaryReportRow]
+    rows: List[SalaryReportRow]
     summary: SalarySummaryTotals
-    payments: list[SalaryPaymentRead] = Field(default_factory=list)
+    payments: List[SalaryPaymentRead] = Field(default_factory=list)
 
 
 class SalaryHistoryCreate(BaseModel):
@@ -373,10 +375,10 @@ class SummaryResponse(BaseModel):
 
 
 class BackupPayload(BaseModel):
-    accounts: list[AccountRead] = Field(default_factory=list)
-    employees: list[EmployeeRead] = Field(default_factory=list)
-    transactions: list[TransactionRead] = Field(default_factory=list)
-    settings: SettingRead | None = None
+    accounts: List[AccountRead] = Field(default_factory=list)
+    employees: List[EmployeeRead] = Field(default_factory=list)
+    transactions: List[TransactionRead] = Field(default_factory=list)
+    settings: Optional[SettingRead] = None
     exported_at: datetime
 
 
