@@ -1,0 +1,49 @@
+# Dependencies and build output
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+backend/.vendor/
+backend/venv/
+.venv/
+venv/
+
+# Local data and private runtime files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
+.env
+.env.*
+!.env.example
+*.local
+*.log
+*.pid
+deployment-url.txt
+error.txt
+
+# Python and tooling caches
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.vite/
+.vercel/
+.codex_tmp/
+.codex/
+.agents/
+.vscode/
+.playwright-cli/
+.superpowers/
+_uv/
+.worktrees/
+local-backups/
+tmp/
+bawar-star-plastic-industry-cashbook-/
+
+# OS and editor files
+.DS_Store
+Thumbs.db

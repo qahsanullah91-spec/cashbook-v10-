@@ -1,0 +1,35 @@
+# Local dependencies and generated build output
+frontend/node_modules
+frontend/dist
+backend/.vendor
+backend/venv
+.venv
+venv
+node_modules
+_uv
+.worktrees
+tmp
+
+# Private/local runtime data
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
+local-backups
+
+# Local configuration, logs, and tooling artifacts
+.env
+.env.*
+*.log
+*.pid
+.codex_tmp
+.playwright-cli
+.superpowers
+.vscode
+bawar-star-plastic-industry-cashbook-
+**/__pycache__
+*.pyc
+.pytest_cache
+.vite

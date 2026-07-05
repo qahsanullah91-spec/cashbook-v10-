@@ -1,0 +1,14 @@
+{
+  "name": "bawar-star-system-storage",
+  "version": "2.0.0",
+  "scripts": {
+    "dev": "cd frontend && npm run dev"
+  },
+  "dependencies": {
+    "googleapis": "144.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BAWAR STAR PLASTIC INDUSTRY - Cash Book</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-icon">CB</div>
+          <div>
+            <h1>BAWAR STAR</h1>
+            <p>Plastic Industry</p>
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+          <button class="nav-btn" data-view="cashbook">Cash Book</button>
+          <button class="nav-btn" data-view="ledger">Ledger</button>
+          <button class="nav-btn" data-view="converter">Converter</button>
+          <button class="nav-btn" data-view="settings">Settings</button>
+        </nav>
+
+        <div class="sidebar-card">
+          <h3>Quick Actions</h3>
+          <button class="secondary-btn" id="quickPrintBtn">Print Preview</button>
+          <button class="secondary-btn" id="backupBtn">Backup</button>
+          <button class="secondary-btn" id="restoreBtn">Restore</button>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Modern Cash Book Accounting</p>
+            <h2 id="pageTitle">Dashboard</h2>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-btn" id="themeToggle">Toggle Theme</button>
+            <button class="primary-btn" id="printCurrentBtn">Print</button>
+          </div>
+        </header>
+
+        <section id="dashboardView" class="view-section active">
+          <div class="hero-card glass-card">
+            <div>
+              <p class="eyebrow">Company Ledger</p>
+              <h3>BAWAR STAR PLASTIC INDUSTRY</h3>
+              <p>Premium cash book software for daily accounting, ledger tracking, and printable records.</p>
+            </div>
+            <div class="hero-stats">
+              <div>
+                <span>Today Transactions</span>
+                <strong id="todayCount">0</strong>
+              </div>
+              <div>
+                <span>Monthly Summary</span>
+                <strong id="monthlySummary">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card glass-card">
+              <p>Total Cash In AFN</p>
+              <h3 id="totalCashInAfn">AFN 0</h3>
+            </div>
+            <div class="stat-card glass-card">
+              <p>Total Cash Out AFN</p>
+              <h3 id="totalCashOutAfn">AFN 0</h3>
+            </div>
+            <div class="stat-card glass-card">
+              <p>Current AFN Balance</p>
+              <h3 id="currentAfnBalance">AFN 0</h3>
+            </div>
+            <div class="stat-card glass-card">
+              <p>Total USD In</p>
+              <h3 id="totalUsdIn">$0</h3>
+            </div>
+            <div class="stat-card glass-card">
+              <p>Total USD Out</p>
+              <h3 id="totalUsdOut">$0</h3>
+            </div>
+            <div class="stat-card glass-card">
+              <p>Current USD Balance</p>
+              <h3 id="currentUsdBalance">$0</h3>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="glass-card">
+              <div class="card-header">
+                <h3>Quick Actions</h3>
+              </div>
+              <div class="action-grid">
+                <button class="action-btn success" id="quickCashInBtn">Add Cash In</button>
+                <button class="action-btn danger" id="quickCashOutBtn">Add Cash Out</button>
+                <button class="action-btn info" id="quickLedgerBtn">Account Ledger</button>
+                <button class="action-btn neutral" id="quickPrintActionBtn">Print</button>
+                <button class="action-btn neutral" id="quickBackupActionBtn">Backup</button>
+                <button class="action-btn neutral" id="quickRestoreActionBtn">Restore</button>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header">
+                <h3>Latest Transactions</h3>
+              </div>
+              <div id="latestTransactions" class="list-stack"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="cashbookView" class="view-section">
+          <div class="section-header glass-card">
+            <div>
+              <p class="eyebrow">Cash Book</p>
+              <h3>Transaction Entry & Records</h3>
+            </div>
+            <div class="section-actions">
+              <button class="ghost-btn" id="fullPrintBtn">Print Cash Book</button>
+              <button class="ghost-btn" id="exportCashBookBtn">Export</button>
+            </div>
+          </div>
+
+          <div class="entry-grid">
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3>Cash In Entry</h3>
+              </div>
+              <form id="cashInForm" class="entry-form">
+                <input type="date" id="cashInDate" title="Cash in date" required />
+                <input type="text" id="cashInName" placeholder="Account / Person / Company" required />
+                <input type="text" id="cashInDetail" placeholder="Detail" required />
+                <input type="number" id="cashInAfn" placeholder="AFN Amount" step="0.01" />
+                <input type="number" id="cashInUsd" placeholder="USD Amount" step="0.01" />
+                <input type="number" id="cashInRate" placeholder="Exchange Rate" step="0.01" />
+                <input type="text" id="cashInNote" placeholder="Note" />
+                <button class="primary-btn full-width" type="submit">Save Cash In</button>
+                <div id="cashInMessage" class="form-message"></div>
+              </form>
+            </div>
+
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3>Cash Out Entry</h3>
+              </div>
+              <form id="cashOutForm" class="entry-form">
+                <input type="date" id="cashOutDate" title="Cash out date" required />
+                <input type="text" id="cashOutName" placeholder="Account / Person / Company" required />
+                <input type="text" id="cashOutDetail" placeholder="Detail" required />
+                <input type="number" id="cashOutAfn" placeholder="AFN Amount" step="0.01" />
+                <input type="number" id="cashOutUsd" placeholder="USD Amount" step="0.01" />
+                <input type="number" id="cashOutRate" placeholder="Exchange Rate" step="0.01" />
+                <input type="text" id="cashOutNote" placeholder="Note" />
+                <button class="primary-btn danger full-width" type="submit">Save Cash Out</button>
+                <div id="cashOutMessage" class="form-message"></div>
+              </form>
+            </div>
+          </div>
+
+          <div class="glass-card table-card" id="cashbookTableCard">
+            <div class="card-header">
+              <h3>Cash Book Records</h3>
+              <div class="filters">
+                <input type="search" id="searchInput" placeholder="Search name, detail, date" />
+                <input type="date" id="startDateFilter" title="Start date" />
+                <input type="date" id="endDateFilter" title="End date" />
+                <select id="typeFilter" title="Transaction type filter">
+                  <option value="all">All</option>
+                  <option value="cash-in">Cash In</option>
+                  <option value="cash-out">Cash Out</option>
+                </select>
+                <button class="ghost-btn" id="fullscreenTableBtn">Full Screen</button>
+                <button class="ghost-btn" id="clearFiltersBtn">Clear</button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>SN</th>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Detail</th>
+                    <th>Cash In AFN</th>
+                    <th>Cash Out AFN</th>
+                    <th>Balance</th>
+                    <th>USD In</th>
+                    <th>USD Out</th>
+                    <th>Exchange Rate</th>
+                    <th>Note</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-summary" id="tableSummary"></div>
+          </div>
+        </section>
+
+        <section id="ledgerView" class="view-section">
+          <div class="section-header glass-card">
+            <div>
+              <p class="eyebrow">Account Ledger</p>
+              <h3>Customer and Company Ledger</h3>
+            </div>
+            <div class="section-actions">
+              <button class="ghost-btn" id="printLedgerBtn">Print Ledger</button>
+              <button class="ghost-btn" id="exportLedgerBtn">Export Ledger</button>
+            </div>
+          </div>
+
+          <div class="entry-grid ledger-grid">
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3>Create Account</h3>
+              </div>
+              <form id="accountForm" class="entry-form">
+                <input type="text" id="accountNameInput" placeholder="Customer / Company Name" required />
+                <input type="number" id="openingBalanceInput" placeholder="Opening Balance AFN" step="0.01" />
+                <button class="primary-btn full-width" type="submit">Add Account</button>
+              </form>
+              <div class="card-header account-subheader">
+                <h3>Search Accounts</h3>
+              </div>
+              <input type="search" id="accountSearchInput" placeholder="Search account name" />
+              <div id="accountList" class="account-list"></div>
+            </div>
+
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3 id="ledgerTitle">Selected Ledger</h3>
+              </div>
+              <div id="ledgerSummary" class="ledger-summary"></div>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>SN</th>
+                      <th>Date</th>
+                      <th>Detail</th>
+                      <th>Cash In</th>
+                      <th>Cash Out</th>
+                      <th>Balance</th>
+                      <th>USD In</th>
+                      <th>USD Out</th>
+                      <th>Note</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ledgerTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="converterView" class="view-section">
+          <div class="section-header glass-card">
+            <div>
+              <p class="eyebrow">Currency Converter</p>
+              <h3>AFN & USD Exchange</h3>
+            </div>
+          </div>
+          <div class="entry-grid">
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3>Live Conversion</h3>
+              </div>
+              <div class="converter-form">
+                <label>
+                  Direction
+                  <select id="converterDirection">
+                    <option value="afnToUsd">AFN to USD</option>
+                    <option value="usdToAfn">USD to AFN</option>
+                  </select>
+                </label>
+                <label>
+                  Amount
+                  <input type="number" id="converterAmount" step="0.01" placeholder="Enter amount" />
+                </label>
+                <label>
+                  Exchange Rate
+                  <input type="number" id="converterRate" step="0.01" placeholder="Exchange rate" />
+                </label>
+                <button class="primary-btn full-width" id="saveRateBtn">Save Default Rate</button>
+                <div id="conversionResult" class="conversion-result"></div>
+              </div>
+            </div>
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3>Example</h3>
+              </div>
+              <div class="info-box">
+                <p>Example calculation:</p>
+                <p class="highlight">1200 × 64.30 = 77,160 AFN</p>
+                <p>Use the saved exchange rate for all transactions automatically.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="settingsView" class="view-section">
+          <div class="section-header glass-card">
+            <div>
+              <p class="eyebrow">Settings</p>
+              <h3>Company Preferences & Backup</h3>
+            </div>
+          </div>
+          <div class="entry-grid">
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3>Company & Preferences</h3>
+              </div>
+              <div class="settings-form">
+                <label>
+                  Company Name
+                  <input type="text" id="companyNameSetting" />
+                </label>
+                <label>
+                  Default Currency
+                  <input type="text" id="currencySetting" value="AFN" />
+                </label>
+                <label>
+                  Default Exchange Rate
+                  <input type="number" id="exchangeRateSetting" step="0.01" />
+                </label>
+                <label>
+                  Theme
+                  <select id="themeSetting">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                  </select>
+                </label>
+                <label class="checkbox-row">
+                  <input type="checkbox" id="printHeaderSetting" checked />
+                  <span>Show company header in print</span>
+                </label>
+                <button class="primary-btn full-width" id="saveSettingsBtn">Save Settings</button>
+              </div>
+            </div>
+            <div class="glass-card form-card">
+              <div class="card-header">
+                <h3>Backup & Restore</h3>
+              </div>
+              <div class="backup-actions">
+                <button class="primary-btn full-width" id="backupSettingsBtn">Export JSON Backup</button>
+                <button class="ghost-btn full-width" id="importSettingsBtn">Import Backup</button>
+                <button class="danger-btn full-width" id="clearDataBtn">Clear All Data</button>
+              </div>
+              <input type="file" id="backupFileInput" accept="application/json" hidden />
+              <div id="backupStatus" class="backup-status"></div>
+              <p class="muted">Last backup: <span id="lastBackupLabel">Never</span></p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="receiptModal" class="modal hidden">
+      <div class="modal-card glass-card">
+        <div class="modal-header">
+          <h3>Receipt / Voucher</h3>
+          <button id="closeReceiptModal" class="ghost-btn">Close</button>
+        </div>
+        <div id="receiptContent" class="receipt-content"></div>
+      </div>
+    </div>
+
+    <input type="file" id="importLedgerFile" accept="application/json" hidden />
+
+    <script src="app.js"></script>
+  </body>
+</html>
