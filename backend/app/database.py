@@ -27,12 +27,20 @@ def resolve_database_url() -> str:
 
     if not raw_url:
         if is_vercel:
-            raise RuntimeError("DATABASE_URL is required on Vercel. Configure the Neon/Postgres connection string in the project environment.")
+            # Fall back to a dummy SQLite URL so the function can start and return
+            # a proper HTTP error instead of crashing with FUNCTION_INVOCATION_FAILED.
+            # The /health endpoint will report "disconnected" until DATABASE_URL is set.
+            return "sqlite:///./cashbook.db"
         raw_url = "sqlite:///./cashbook.db"
 
     database_url = normalize_database_url(raw_url)
     if is_production and database_url.startswith("sqlite"):
-        raise RuntimeError("Production Vercel DATABASE_URL must point to Neon/Postgres, not SQLite.")
+        # Log a warning but don't raise — allow the function to start.
+        import logging
+        logging.getLogger("cashbook").warning(
+            "DATABASE_URL is not set or points to SQLite on Vercel production. "
+            "Configure a Neon/Postgres connection string."
+        )
 
     return database_url
 
