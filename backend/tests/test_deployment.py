@@ -33,14 +33,12 @@ class DeploymentContractTests(unittest.TestCase):
         self.assertIsNone(payload["currentUser"])
 
     def test_auth_status_route_is_registered(self):
-        # Get all routes including those from included routers
-        route_paths = set()
-        for route in app.routes:
-            if isinstance(route, APIRoute):
-                route_paths.add(route.path)
+        # Use OpenAPI schema to get all registered routes
+        openapi_schema = app.openapi()
+        route_paths = set(openapi_schema.get("paths", {}).keys())
         
         # Debug: print all registered routes
-        print(f"\nRegistered routes: {sorted(route_paths)}")
+        print(f"\nRegistered routes from OpenAPI: {sorted(route_paths)}")
         self.assertIn("/api/auth/status", route_paths)
 
     def test_neon_database_urls_use_installed_pg8000_driver(self):
