@@ -2,7 +2,7 @@
   "name": "bawar-star-system-storage",
   "version": "2.0.0",
   "scripts": {
-    "dev": "cd frontend && npm run dev"
+    "dev": "cd frontend && npm install && npm run dev"
   },
   "dependencies": {
     "googleapis": "144.0.0"
