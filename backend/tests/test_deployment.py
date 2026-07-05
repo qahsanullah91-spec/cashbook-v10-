@@ -33,11 +33,12 @@ class DeploymentContractTests(unittest.TestCase):
         self.assertIsNone(payload["currentUser"])
 
     def test_auth_status_route_is_registered(self):
-        route_paths = {
-            route.path
-            for route in app.routes
-            if isinstance(route, APIRoute)
-        }
+        # Get all routes including those from included routers
+        route_paths = set()
+        for route in app.routes:
+            if isinstance(route, APIRoute):
+                route_paths.add(route.path)
+        
         # Debug: print all registered routes
         print(f"\nRegistered routes: {sorted(route_paths)}")
         self.assertIn("/api/auth/status", route_paths)
