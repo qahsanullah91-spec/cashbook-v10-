@@ -131,6 +131,7 @@ def health_auth():
         db.close()
 
 
+# Register all routers
 app.include_router(transactions.router)
 app.include_router(accounts.router)
 app.include_router(employees.router)
