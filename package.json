@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "scripts": {
     "postinstall": "npm --prefix frontend install",
-    "dev": "concurrently -n backend,frontend -c magenta,cyan \"uv run uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload\" \"npm --prefix frontend run dev\""
+    "dev": "concurrently -n backend,frontend -c magenta,cyan \"sh -c 'sleep 8 && uv run uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload'\" \"npm --prefix frontend run dev\""
   },
   "dependencies": {
     "googleapis": "144.0.0"
