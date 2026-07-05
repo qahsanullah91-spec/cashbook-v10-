@@ -27,10 +27,9 @@ def resolve_database_url() -> str:
 
     if not raw_url:
         if is_vercel:
-            # Fall back to a dummy SQLite URL so the function can start and return
-            # a proper HTTP error instead of crashing with FUNCTION_INVOCATION_FAILED.
-            # The /health endpoint will report "disconnected" until DATABASE_URL is set.
-            return "sqlite:///./cashbook.db"
+            # /tmp is the only writable directory in Vercel serverless functions.
+            # Fall back to SQLite there so the function can start and serve requests.
+            return "sqlite:////tmp/cashbook.db"
         raw_url = "sqlite:///./cashbook.db"
 
     database_url = normalize_database_url(raw_url)
