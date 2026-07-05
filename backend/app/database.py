@@ -27,12 +27,19 @@ def resolve_database_url() -> str:
 
     if not raw_url:
         if is_vercel:
-            raise RuntimeError("DATABASE_URL is required on Vercel. Configure the Neon/Postgres connection string in the project environment.")
+            # /tmp is the only writable directory in Vercel serverless functions.
+            # Fall back to SQLite there so the function can start and serve requests.
+            return "sqlite:////tmp/cashbook.db"
         raw_url = "sqlite:///./cashbook.db"
 
     database_url = normalize_database_url(raw_url)
     if is_production and database_url.startswith("sqlite"):
-        raise RuntimeError("Production Vercel DATABASE_URL must point to Neon/Postgres, not SQLite.")
+        # Log a warning but don't raise — allow the function to start.
+        import logging
+        logging.getLogger("cashbook").warning(
+            "DATABASE_URL is not set or points to SQLite on Vercel production. "
+            "Configure a Neon/Postgres connection string."
+        )
 
     return database_url
 

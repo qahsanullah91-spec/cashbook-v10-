@@ -2,15 +2,14 @@
   "name": "bawar-star-system-storage",
   "version": "2.0.0",
   "scripts": {
-    "dev": "cd frontend && npm run dev"
+    "dev": "concurrently --kill-others-on-fail -n backend,frontend -c magenta,cyan \"python3.9 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload\" \"npm --prefix frontend run dev\""
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^6.0.3",
-    "googleapis": "144.0.0",
-    "vite": "^8.1.3"
+    "googleapis": "144.0.0"
   },
   "devDependencies": {
     "@types/node": "20.19.43",
+    "concurrently": "^10.0.3",
     "typescript": "5.9.3"
   }
 }

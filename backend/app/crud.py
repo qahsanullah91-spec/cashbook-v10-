@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from datetime import date, datetime, timedelta
 from sqlalchemy import func, or_
