@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@neondatabase/neon-js": "^0.6.2-beta",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "2.0.0",
     "axios": "1.16.0",
     "googleapis": "144.0.0",

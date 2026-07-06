@@ -1,4 +1,5 @@
 import { lazy, startTransition, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import ReceiptModal from './components/ReceiptModal';
@@ -1519,6 +1520,7 @@ export default function App() {
       /></Suspense>}
       <ConfirmDialog open={!!confirm} title={confirm?.title} message={confirm?.message} onCancel={() => setConfirm(null)} onConfirm={confirm?.onConfirm} />
       <ToastNotification toast={toast} />
+      <Analytics />
     </div>
   );
 }
