@@ -10,6 +10,7 @@ import {
   User
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CompanyLogo from '../components/CompanyLogo';
 import { isNeonAuthEnabled, signInWithNeonAuth, signUpWithNeonAuth, getNeonAuthToken } from '../auth';
 import { api, setAuthToken } from '../services/api';
@@ -27,6 +28,7 @@ function timeLabel(now) {
 }
 
 export default function LoginScreen({ users, rememberedUsername, onLogin, connectionError, isPreparing, onRetryConnection, companyName, companyLogo }) {
+  const { t } = useTranslation();
   const [username, setUsername] = useState(rememberedUsername || '');
   const [password, setPassword] = useState('');
   const [rememberUser, setRememberUser] = useState(Boolean(rememberedUsername));
@@ -59,7 +61,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
   async function submit(event) {
     event?.preventDefault();
     if (!username.trim() || !password.trim()) {
-      setMessage('Enter your username and password to continue.');
+      setMessage(t('login.enterCredentials'));
       return;
     }
     setIsSubmitting(true);
@@ -77,7 +79,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
   async function submitNeonAuth(event) {
     event?.preventDefault();
     if (!neonEmail.trim() || !neonPassword.trim()) {
-      setNeonMessage('Enter your email and password.');
+      setNeonMessage(t('login.enterEmailPassword'));
       return;
     }
     setIsNeonSubmitting(true);
@@ -90,13 +92,13 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
         result = await signInWithNeonAuth(neonEmail.trim(), neonPassword);
       }
       if (result?.error) {
-        setNeonMessage(result.error.message || 'Authentication failed.');
+        setNeonMessage(result.error.message || t('login.authFailed'));
         return;
       }
       // Get the JWT from the Neon Auth session
       const jwtToken = await getNeonAuthToken();
       if (!jwtToken) {
-        setNeonMessage('Could not retrieve session token from Neon Auth.');
+        setNeonMessage(t('login.noSessionToken'));
         return;
       }
       // Exchange the JWT for a standard cashbook session token
@@ -105,10 +107,10 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
         setAuthToken(loginResp.token);
         await onLogin({ _neonAuthResponse: loginResp });
       } else {
-        setNeonMessage('Sign-in succeeded but no session was returned. Please try again.');
+        setNeonMessage(t('login.noSessionReturned'));
       }
     } catch (error) {
-      setNeonMessage(error.message || 'Neon Auth error. Please try again.');
+      setNeonMessage(error.message || t('login.neonAuthError'));
     } finally {
       setIsNeonSubmitting(false);
     }
@@ -134,20 +136,20 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
             <CompanyLogo logo={companyLogo} name={companyName} size="lg" />
             <div>
               <strong>{companyName || 'SKY Cash Book'}</strong>
-              <span>Enterprise Cash Book Accounting</span>
+              <span>{t('login.brandSubtitle')}</span>
             </div>
           </div>
 
           <div className="login-intro-copy">
-            <h2>Welcome back</h2>
-            <p>Sign in to manage your cash book, accounts, reports, and daily business activity.</p>
+            <h2>{t('login.welcomeBack')}</h2>
+            <p>{t('login.welcomeDescription')}</p>
           </div>
 
           <div className="login-security-note">
             <ShieldCheck size={20} />
             <div>
-              <strong>Secure access</strong>
-              <span>Your account is protected by encrypted authentication.</span>
+              <strong>{t('login.secureAccess')}</strong>
+              <span>{t('login.secureAccessDescription')}</span>
             </div>
           </div>
         </div>
@@ -156,13 +158,13 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
           <div className="login-form-heading">
             <span className="login-lock-icon"><LockKeyhole size={21} /></span>
             <div>
-              <h2>Sign in</h2>
-              <p>Enter your username and password to access the system.</p>
+              <h2>{t('login.signIn')}</h2>
+              <p>{t('login.signInDescription')}</p>
             </div>
           </div>
 
           <form className="login-form" onSubmit={submit}>
-            <label className="login-field-label" htmlFor="login-username">Username</label>
+            <label className="login-field-label" htmlFor="login-username">{t('login.username')}</label>
             <div className="login-password-shell" style={{ marginBottom: '16px' }}>
               <User size={18} />
               <input
@@ -170,7 +172,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                 type="text"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
-                placeholder="Enter your username"
+                placeholder={t('login.usernamePlaceholder')}
                 autoComplete="username"
                 autoFocus
                 required
@@ -178,7 +180,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
               />
             </div>
 
-            <label className="login-field-label" htmlFor="login-password">Password</label>
+            <label className="login-field-label" htmlFor="login-password">{t('login.password')}</label>
             <div className="login-password-shell">
               <LockKeyhole size={18} />
               <input
@@ -186,14 +188,14 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Enter your password"
+                placeholder={t('login.passwordPlaceholder')}
                 autoComplete="current-password"
                 required
                 disabled={isSubmitting || isPreparing}
               />
               <button
                 type="button"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                 onClick={() => setShowPassword((value) => !value)}
                 disabled={isSubmitting}
               >
@@ -204,7 +206,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
             <div className="login-form-options">
               <label className="remember-user">
                 <input type="checkbox" checked={rememberUser} onChange={(event) => setRememberUser(event.target.checked)} />
-                <span>Remember me</span>
+                <span>{t('login.rememberMe')}</span>
               </label>
               <button className="forgot-password-link" type="button" onClick={() => setHelpOpen((value) => !value)}>
                 <CircleHelp size={16} />
@@ -214,32 +216,32 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
 
             {helpOpen && (
               <div className="login-help-popover">
-                <strong>Password assistance</strong>
-                <span>Contact your administrator to reset your password.</span>
+                <strong>{t('login.passwordAssistance')}</strong>
+                <span>{t('login.contactAdmin')}</span>
               </div>
             )}
             {connectionError && (
               <div className="login-connection-alert">
-                <strong>Backend connection needed</strong>
+                <strong>{t('login.backendConnectionNeeded')}</strong>
                 <span>{connectionError}</span>
-                <button type="button" onClick={onRetryConnection}>Retry Connection</button>
+                <button type="button" onClick={onRetryConnection}>{t('login.retryConnection')}</button>
               </div>
             )}
             {message && <p className="login-message" role="alert">{message}</p>}
 
             <button className="login-submit-full" type="submit" disabled={isSubmitting || isPreparing || !password.trim()}>
-              {isPreparing ? 'Connecting...' : isSubmitting ? 'Signing in...' : 'Sign in securely'}
+              {isPreparing ? t('login.connecting') : isSubmitting ? t('login.signingIn') : t('login.signInSecurely')}
             </button>
           </form>
 
           <p className="login-required" aria-live="polite">
-            {isPreparing ? 'Checking secure server...' : isSubmitting ? 'Signing in securely...' : 'Authorized users only'}
+            {isPreparing ? t('login.checkingServer') : isSubmitting ? t('login.signingInSecurely') : t('login.authorizedOnly')}
           </p>
 
           {isNeonAuthEnabled && (
             <div className="login-neon-auth-section">
               <div className="login-divider" aria-hidden="true">
-                <span>or</span>
+                <span>{t('login.or')}</span>
               </div>
 
               {!showNeonSection ? (
@@ -249,7 +251,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                   type="button"
                   onClick={() => setShowNeonSection(true)}
                 >
-                  Continue with Neon Auth
+                  {t('login.continueWithNeonAuth')}
                 </button>
               ) : (
                 <div className="login-neon-auth-form-wrap">
@@ -259,13 +261,13 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                       type="button"
                       className={neonAuthMode === 'signin' ? 'active' : ''}
                       onClick={() => { setNeonAuthMode('signin'); setNeonMessage(''); }}
-                    >Sign in</button>
+                    >{t('login.signIn')}</button>
                     <button
                       id="btn-neon-signup-tab"
                       type="button"
                       className={neonAuthMode === 'signup' ? 'active' : ''}
                       onClick={() => { setNeonAuthMode('signup'); setNeonMessage(''); }}
-                    >Create account</button>
+                    >{t('login.createAccount')}</button>
                   </div>
 
                   <form className="login-neon-auth-form" onSubmit={submitNeonAuth} noValidate>
@@ -273,7 +275,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                       <input
                         id="neon-auth-name"
                         type="text"
-                        placeholder="Your name"
+                        placeholder={t('login.namePlaceholder')}
                         value={neonName}
                         onChange={(e) => setNeonName(e.target.value)}
                         disabled={isNeonSubmitting}
@@ -283,7 +285,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                     <input
                       id="neon-auth-email"
                       type="email"
-                      placeholder="Email address"
+                      placeholder={t('login.emailPlaceholder')}
                       value={neonEmail}
                       onChange={(e) => setNeonEmail(e.target.value)}
                       disabled={isNeonSubmitting}
@@ -293,7 +295,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                     <input
                       id="neon-auth-password"
                       type="password"
-                      placeholder="Password"
+                      placeholder={t('login.password')}
                       value={neonPassword}
                       onChange={(e) => setNeonPassword(e.target.value)}
                       disabled={isNeonSubmitting}
@@ -310,10 +312,10 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                       disabled={isNeonSubmitting || !neonEmail.trim() || !neonPassword.trim()}
                     >
                       {isNeonSubmitting
-                        ? 'Please wait...'
+                        ? t('login.pleaseWait')
                         : neonAuthMode === 'signup'
-                          ? 'Create account'
-                          : 'Sign in'}
+                          ? t('login.createAccount')
+                          : t('login.signIn')}
                     </button>
                   </form>
                 </div>
