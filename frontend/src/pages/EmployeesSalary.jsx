@@ -250,8 +250,7 @@ export default function EmployeesSalary({
     if (!printWindow) return;
     printWindow.document.write(html);
     printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    // Print is triggered by the script inside the HTML after the logo loads
   }
 
   function exportExcel() {
@@ -745,248 +744,288 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
         <td class="money">${currency(row.total_payable_salary ?? row.monthly_salary)}</td>
         <td class="money paid-money">${currency(row.paid_salary)}</td>
         <td class="money due-money">${currency(row.remaining_salary)}</td>
-        <td><span class="status-badge ${statusClass}">${row.payment_status}</span></td>
-        <td>${row.last_payment_date || '-'}</td>
+        <td style="text-align: center;"><span class="status-badge ${statusClass}">${row.payment_status}</span></td>
+        <td style="text-align: center; color: #4b5563; font-family: monospace;">${row.last_payment_date || '-'}</td>
       </tr>
     `;
   }).join('');
-  return `<!doctype html><html><head><title>Employees Salary Report</title><style>
+
+  const initials = (companyName || 'SKY').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'SKY';
+
+  const logoHtml = companyLogo
+    ? `<img class="logo" src="${companyLogo}" id="report-logo" />`
+    : `<div class="logo logo-placeholder"><span>${initials}</span></div>`;
+
+  return `<!doctype html><html><head><title>Employees Salary Report – ${reportMonth}</title><style>
+    /* ===== BASE STYLES (screen + print) ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+      font-size: 10px;
+      line-height: 1.5;
+      background: #f3f4f6;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .print-container {
+      max-width: 297mm;
+      margin: 0 auto;
+      background: #fff;
+    }
+
+    .document-frame {
+      min-height: 190mm;
+      padding: 8mm 10mm;
+    }
+
+    /* --- Header --- */
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid #1d4ed8;
+      padding-bottom: 14px;
+      margin-bottom: 22px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+    .logo-placeholder {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 10px rgba(29, 78, 216, 0.15);
+      border: none !important;
+    }
+    .report-title h2 {
+      font-size: 10px;
+      margin: 0 0 2px 0;
+      color: #1d4ed8;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+    }
+    .report-title h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      text-transform: uppercase;
+      line-height: 1.15;
+      color: #111827;
+    }
+    .subtitle {
+      font-size: 11px;
+      font-weight: 600;
+      color: #4b5563;
+      margin-top: 3px;
+    }
+    .report-meta {
+      text-align: right;
+      font-size: 9px;
+      color: #6b7280;
+      line-height: 1.6;
+      flex-shrink: 0;
+    }
+    .report-meta strong {
+      display: block;
+      color: #111827;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    /* --- Summary Metrics Grid --- */
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #4b5563;
+      margin: 20px 0 10px 0;
+    }
+    .summary-metrics {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .metric-box {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #f9fafb;
+    }
+    .metric-box-green {
+      border-color: #a7f3d0;
+      background: #ecfdf5;
+    }
+    .metric-box-green .metric-value {
+      color: #059669;
+    }
+    .metric-box-amber {
+      border-color: #fde68a;
+      background: #fffbeb;
+    }
+    .metric-box-amber .metric-value {
+      color: #d97706;
+    }
+    .metric-label {
+      font-size: 8px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      font-weight: 700;
+      display: block;
+    }
+    .metric-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111827;
+      display: block;
+    }
+
+    /* --- Table --- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      page-break-inside: auto;
+      margin-bottom: 28px;
+      font-size: 9.5px;
+    }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    tbody tr:hover { background: #f3f4f6; }
+    th, td {
+      padding: 9px 6px;
+      text-align: left;
+      vertical-align: middle;
+      word-break: normal;
+    }
+    th {
+      background: #f1f5f9;
+      border-bottom: 2px solid #1e293b;
+      border-top: 1px solid #e2e8f0;
+      color: #475569;
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      vertical-align: bottom;
+    }
+    td {
+      border-bottom: 1px solid #e5e7eb;
+    }
+    tfoot td {
+      font-weight: 800;
+      background: #f8fafc !important;
+      border-top: 2px solid #1e293b;
+      border-bottom: 2px solid #1e293b;
+      font-size: 10px;
+    }
+    .index { width: 35px; text-align: center; color: #9ca3af; }
+    .code { font-family: 'SF Mono', 'Cascadia Code', Consolas, monospace; font-size: 9px; color: #6b7280; }
+    .name { font-weight: 700; color: #111827; }
+    .money {
+      font-family: 'SF Mono', 'Cascadia Code', Consolas, monospace;
+      font-weight: 700;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .paid-money { color: #059669; }
+    .due-money { color: #dc2626; }
+
+    /* --- Status Badges --- */
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 700;
+      border: 1.5px solid currentColor;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .status-paid { color: #059669; background: #ecfdf5; }
+    .status-partial { color: #d97706; background: #fffbeb; }
+    .status-unpaid { color: #dc2626; background: #fef2f2; }
+    .status-advance { color: #7c3aed; background: #f5f3ff; }
+
+    /* --- Signatures --- */
+    .signatures {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 50px;
+      margin-top: 60px;
+      page-break-inside: avoid;
+    }
+    .sig-line {
+      border-top: 1.5px solid #374151;
+      padding-top: 8px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 10mm;
+      padding-top: 6px;
+      font-size: 9px;
+      color: #9ca3af;
+    }
+
+    /* ===== PRINT OVERRIDES ===== */
     @media print {
-      @page { 
-        size: A4 landscape; 
-        margin: 12mm; 
+      @page {
+        size: A4 landscape;
+        margin: 10mm;
       }
-      
-      * { 
-        box-sizing: border-box; 
-        -webkit-print-color-adjust: exact !important; 
-        print-color-adjust: exact !important; 
-      }
-      
-      body { 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-        color: #1d1d1f; 
-        margin: 0; 
-        padding: 0; 
-        font-size: 10px; 
-        line-height: 1.4; 
-        background: #fff !important;
-      }
-      
+      body { background: #fff !important; }
+      .print-container { max-width: none; box-shadow: none; }
+      .document-frame { padding: 2mm 4mm; }
+      tbody tr:nth-child(even) { background: #f9fafb !important; }
+    }
+
+    /* ===== SCREEN PREVIEW ===== */
+    @media screen {
+      body { padding: 20px; }
       .print-container {
-        width: 100%;
-        max-width: none;
-        margin: auto;
-        background: #fff;
-      }
-
-      .document-frame {
-        min-height: 190mm;
-        padding: 4mm 4mm;
-        box-sizing: border-box;
-      }
-
-      /* --- Header --- */
-      .report-header { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: flex-end; 
-        border-bottom: 2px solid #1d1d1f; 
-        padding-bottom: 12px; 
-        margin-bottom: 20px; 
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .logo {
-        width: 58px;
-        height: 58px;
-        object-fit: contain;
-      }
-      .report-title h1 { 
-        font-size: 20px; 
-        margin: 0; 
-        font-weight: 700; 
-        letter-spacing: -0.5px; 
-        text-transform: uppercase; 
-        line-height: 1.1;
-      }
-      .report-title h2 { 
-        font-size: 11px; 
-        margin: 0 0 4px 0; 
-        color: #0066cc; 
-        text-transform: uppercase; 
-        letter-spacing: 0.5px; 
-      }
-      .subtitle {
-        font-size: 12px;
-        font-weight: 700;
-        color: #1d1d1f;
-        margin-top: 2px;
-      }
-      .report-meta { 
-        text-align: right; 
-        font-size: 9px; 
-        color: #86868b; 
-        line-height: 1.5;
-      }
-      .report-meta strong {
-        display: block;
-        color: #1d1d1f;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      
-      /* --- Summary Metrics Grid --- */
-      .section-title { 
-        font-size: 10px; 
-        font-weight: 700; 
-        text-transform: uppercase; 
-        letter-spacing: 0.5px; 
-        color: #86868b; 
-        margin: 24px 0 8px 0; 
-      }
-      .summary-metrics { 
-        display: grid; 
-        grid-template-columns: repeat(6, 1fr); 
-        gap: 12px; 
-        margin-bottom: 24px; 
-      }
-      .metric-box { 
-        border: 1px solid #d2d2d7; 
-        border-radius: 6px; 
-        padding: 10px 12px; 
-        background: #fafafa; 
-        min-height: 45px;
-      }
-      .metric-label { 
-        font-size: 8.5px; 
-        color: #86868b; 
-        text-transform: uppercase; 
-        margin-bottom: 4px; 
-        font-weight: 600;
-        display: block;
-      }
-      .metric-value { 
-        font-size: 13px; 
-        font-weight: 700; 
-        color: #1d1d1f; 
-        display: block;
-      }
-      
-      /* --- Modern Data Table --- */
-      table { 
-        width: 100%; 
-        border-collapse: collapse; 
-        table-layout: fixed;
-        page-break-inside: auto; 
-        margin-bottom: 30px; 
-        font-size: 9.5px;
-      }
-      thead { 
-        display: table-header-group; 
-      }
-      tr { 
-        page-break-inside: avoid; 
-        page-break-after: auto; 
-      }
-      th, td {
-        padding: 8px 4px;
-        text-align: left;
-        vertical-align: top;
-        word-break: normal;
-        border-left: none;
-        border-right: none;
-      }
-      th { 
-        border-bottom: 1px solid #1d1d1f; 
-        color: #86868b; 
-        font-size: 8.5px; 
-        font-weight: 700; 
-        text-transform: uppercase; 
-        vertical-align: bottom; 
-      }
-      td { 
-        border-bottom: 1px solid #e5e5ea; 
-        padding: 10px 4px; 
-      }
-      tfoot td {
-        font-weight: 700;
-        background: transparent;
-        border-top: 1px solid #1d1d1f;
-        border-bottom: none;
-      }
-      .index {
-        width: 32px;
-        text-align: center;
-      }
-      .code {
-        font-family: Courier, monospace;
-      }
-      .name {
-        font-weight: 700;
-      }
-      .money {
-        font-family: Courier, monospace;
-        font-weight: 700;
-        text-align: right;
-        white-space: nowrap;
-      }
-      .paid-money {
-        color: #15803d;
-      }
-      .due-money {
-        color: #b91c1c;
-      }
-      
-      /* --- Status Badges --- */
-      .status-badge { 
-        display: inline-block; 
-        padding: 3px 6px; 
-        border-radius: 4px; 
-        font-size: 8.5px; 
-        font-weight: 700; 
-        border: 1px solid currentColor; 
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
-      .status-paid { color: #15803d; background: #f0fdf4; }
-      .status-partial { color: #b45309; background: #fffbeb; }
-      .status-unpaid { color: #b91c1c; background: #fef2f2; }
-      .status-advance { color: #7c3aed; background: #f5f3ff; }
-      
-      /* --- Signatures --- */
-      .signatures { 
-        display: grid; 
-        grid-template-columns: repeat(3, 1fr); 
-        gap: 60px; 
-        margin-top: 50px; 
-        page-break-inside: avoid; 
-      }
-      .sig-line { 
-        border-top: 1px solid #1d1d1f; 
-        padding-top: 8px; 
-        text-align: center; 
-        font-size: 10px; 
-        font-weight: 600; 
-      }
-      footer {
-        display: flex;
-        justify-content: space-between;
-        border-top: 1px solid #e5e5ea;
-        margin-top: 9mm;
-        padding-top: 5px;
-        font-size: 9.5px;
-        color: #86868b;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+        border-radius: 8px;
       }
     }
   </style></head><body><main class="print-container"><section class="document-frame">
     <header class="report-header">
       <div class="brand">
-        ${companyLogo ? `<img class="logo" src="${companyLogo}" />` : ''}
+        ${logoHtml}
         <div class="report-title">
           <h2>Official Payroll Report</h2>
           <h1>${companyName}</h1>
@@ -1009,25 +1048,49 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
         <span class="metric-label">Total Payable</span>
         <strong class="metric-value">${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</strong>
       </div>
-      <div class="metric-box">
+      <div class="metric-box metric-box-green">
         <span class="metric-label">Total Paid</span>
         <strong class="metric-value">${currency(summary.total_paid_this_month)}</strong>
       </div>
-      <div class="metric-box">
+      <div class="metric-box ${summary.total_remaining_salary > 0 ? 'metric-box-amber' : ''}">
         <span class="metric-label">Total Carry Forward</span>
         <strong class="metric-value">${currency(summary.total_remaining_salary)}</strong>
       </div>
-      <div class="metric-box">
+      <div class="metric-box metric-box-green">
         <span class="metric-label">Fully Paid</span>
         <strong class="metric-value">${summary.fully_paid_employees}</strong>
       </div>
-      <div class="metric-box">
+      <div class="metric-box ${summary.unpaid_employees > 0 ? 'metric-box-amber' : ''}">
         <span class="metric-label">Unpaid</span>
         <strong class="metric-value">${summary.unpaid_employees}</strong>
       </div>
     </section>
     <p class="section-title">Salary Record Details</p>
-    <table><thead><tr><th>S.No</th><th>Employee ID</th><th>Employee Name</th><th>Department / Position</th><th>Total Payable</th><th>Paid Salary</th><th>Carry Forward</th><th>Payment Status</th><th>Last Payment Date</th></tr></thead><tbody>${tableRows}</tbody><tfoot><tr><td colspan="4">Totals</td><td class="money">${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</td><td class="money">${currency(summary.total_paid_this_month)}</td><td class="money">${currency(summary.total_remaining_salary)}</td><td colspan="2"></td></tr></tfoot></table>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35px; text-align: center;">S.No</th>
+          <th style="width: 75px;">Emp ID</th>
+          <th style="width: 140px;">Employee Name</th>
+          <th style="width: 170px;">Department / Position</th>
+          <th style="width: 95px; text-align: right;">Total Payable</th>
+          <th style="width: 95px; text-align: right;">Paid Salary</th>
+          <th style="width: 95px; text-align: right;">Carry Forward</th>
+          <th style="width: 90px; text-align: center;">Status</th>
+          <th style="width: 90px; text-align: center;">Last Payment</th>
+        </tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="text-align: right; padding-right: 15px;">Totals</td>
+          <td class="money">${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</td>
+          <td class="money">${currency(summary.total_paid_this_month)}</td>
+          <td class="money">${currency(summary.total_remaining_salary)}</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
     <section class="signatures">
       <div class="sig-line">Prepared By</div>
       <div class="sig-line">Accountant Signature</div>
@@ -1035,5 +1098,32 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
     </section>
     <footer><span>Generated by Bawar Star Cash Book</span><span>${companyName}</span></footer>
   </section>
-  </main></body></html>`;
+  </main>
+  <script>
+    // Wait for the logo image to load before printing, with a fallback timeout
+    (function() {
+      var logo = document.getElementById('report-logo');
+      function doPrint() {
+        window.focus();
+        window.print();
+      }
+      if (logo && !logo.complete) {
+        logo.onload = function() { setTimeout(doPrint, 200); };
+        logo.onerror = function() {
+          var initials = "${initials}";
+          var placeholder = document.createElement('div');
+          placeholder.className = 'logo logo-placeholder';
+          placeholder.innerHTML = '<span>' + initials + '</span>';
+          logo.parentNode.replaceChild(placeholder, logo);
+          setTimeout(doPrint, 200);
+        };
+        // Fallback: print after 3s even if image hasn't loaded
+        setTimeout(doPrint, 3000);
+      } else {
+        setTimeout(doPrint, 300);
+      }
+    })();
+  </script>
+  </body></html>`;
 }
+
