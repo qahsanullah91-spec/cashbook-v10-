@@ -860,6 +860,20 @@ export default function App() {
     }
   }
 
+  async function onUpdateEmployee(id, payload) {
+    try {
+      const employee = await api.updateEmployee(id, payload);
+      const nextAccounts = await api.getAccounts();
+      setEmployees((current) => current.map((item) => Number(item.id) === Number(id) ? employee : item).sort((a, b) => a.full_name.localeCompare(b.full_name)));
+      setAccounts(nextAccounts);
+      showToast('Employee updated.', 'success');
+      return employee;
+    } catch (error) {
+      showToast(error.message, 'error');
+      throw error;
+    }
+  }
+
   async function onSalaryPaymentSaved() {
     const [nextTransactions, nextSummary] = await Promise.all([
       api.getTransactions(),
@@ -1299,6 +1313,7 @@ export default function App() {
               employees={employees}
               transactions={transactions}
               onCreateEmployee={onCreateEmployee}
+              onUpdateEmployee={onUpdateEmployee}
               onOpenCashBook={() => setActiveView('cashbook')}
               onSalaryPaymentSaved={onSalaryPaymentSaved}
               companyName={companyName}

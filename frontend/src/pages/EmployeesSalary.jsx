@@ -42,6 +42,7 @@ export default function EmployeesSalary({
   employees = [],
   transactions = [],
   onCreateEmployee,
+  onUpdateEmployee,
   onOpenCashBook,
   onSalaryPaymentSaved,
   onEmployeeSalaryChanged,
@@ -53,6 +54,7 @@ export default function EmployeesSalary({
 }) {
   const [activeTab, setActiveTab] = useState('Overview');
   const [employeeForm, setEmployeeForm] = useState(emptyEmployee);
+  const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [report, setReport] = useState(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -102,11 +104,39 @@ export default function EmployeesSalary({
     showLocalToast.timer = window.setTimeout(() => setToast(''), 2600);
   }
 
+  function handleEditEmployee(employeeOrRow) {
+    const employee = employeeOrRow.id
+      ? employeeOrRow
+      : employees.find((emp) => Number(emp.id) === Number(employeeOrRow.employee_id));
+    if (!employee) return;
+
+    setEmployeeForm({
+      full_name: employee.full_name || '',
+      father_name: employee.father_name || '',
+      phone: employee.phone || '',
+      position: employee.position || '',
+      department: employee.department || '',
+      joining_date: employee.joining_date || new Date().toISOString().slice(0, 10),
+      monthly_salary: String(employee.monthly_salary || ''),
+      currency: employee.currency || 'AFN',
+      status: employee.status || 'active',
+      notes: employee.notes || ''
+    });
+    setEditingEmployeeId(employee.id);
+    setActiveTab('Employees');
+  }
+
   async function submitEmployee(event) {
     event.preventDefault();
     setSaving(true);
     try {
-      await onCreateEmployee({ ...employeeForm, monthly_salary: Number(employeeForm.monthly_salary || 0) });
+      const payload = { ...employeeForm, monthly_salary: Number(employeeForm.monthly_salary || 0) };
+      if (editingEmployeeId) {
+        await onUpdateEmployee(editingEmployeeId, payload);
+        setEditingEmployeeId(null);
+      } else {
+        await onCreateEmployee(payload);
+      }
       setEmployeeForm(emptyEmployee);
       await loadSalaryReport();
     } finally {
@@ -283,7 +313,7 @@ export default function EmployeesSalary({
               <div className="salary-progress"><span style={{ width: summary.total_monthly_salary ? `${Math.min((summary.total_paid_this_month / summary.total_monthly_salary) * 100, 100)}%` : '0%' }} /></div>
               <p className="salary-muted">Salary payments now create linked Cashbook Cash Out entries and update monthly balances immediately.</p>
             </article>
-            <EmployeeList employees={employees} transactions={transactions} reportRows={report?.rows} onPay={(row) => { setActiveTab('Reports'); setPayingRow(row); }} onEditSalary={currentUser?.role === 'Administrator' ? setEditingSalaryRow : null} onDeleteEmployee={currentUser?.role === 'Administrator' ? deleteEmployee : null} onChangeAvatar={currentUser?.role === 'Administrator' ? updateEmployeeAvatar : null} deletingEmployeeId={deletingEmployeeId} uploadingAvatarId={uploadingAvatarId} />
+            <EmployeeList employees={employees} transactions={transactions} reportRows={report?.rows} onPay={(row) => { setActiveTab('Reports'); setPayingRow(row); }} onEditEmployee={currentUser?.role === 'Administrator' ? handleEditEmployee : null} onEditSalary={currentUser?.role === 'Administrator' ? setEditingSalaryRow : null} onDeleteEmployee={currentUser?.role === 'Administrator' ? deleteEmployee : null} onChangeAvatar={currentUser?.role === 'Administrator' ? updateEmployeeAvatar : null} deletingEmployeeId={deletingEmployeeId} uploadingAvatarId={uploadingAvatarId} />
           </div>
         </>
       )}
@@ -291,21 +321,26 @@ export default function EmployeesSalary({
       {activeTab === 'Employees' && (
         <div className="salary-management-grid">
           <article className="glass-card salary-panel">
-            <div className="salary-panel-heading"><div><p className="eyebrow">Employee Management</p><h3>Add Employee</h3></div></div>
-            <form className="entry-form" onSubmit={submitEmployee}>
-              <input value={employeeForm.full_name} onChange={(event) => setEmployeeForm({ ...employeeForm, full_name: event.target.value })} placeholder="Full Name" required />
-              <input value={employeeForm.father_name} onChange={(event) => setEmployeeForm({ ...employeeForm, father_name: event.target.value })} placeholder="Father Name" />
-              <input value={employeeForm.phone} onChange={(event) => setEmployeeForm({ ...employeeForm, phone: event.target.value })} placeholder="Phone Number" />
-              <input value={employeeForm.position} onChange={(event) => setEmployeeForm({ ...employeeForm, position: event.target.value })} placeholder="Position / Job Title" required />
-              <input value={employeeForm.department} onChange={(event) => setEmployeeForm({ ...employeeForm, department: event.target.value })} placeholder="Department" />
-              <label className="salary-month-field"><span>Joining Date</span><input type="date" value={employeeForm.joining_date} onChange={(event) => setEmployeeForm({ ...employeeForm, joining_date: event.target.value })} required /></label>
-              <input type="number" min="0" step="0.01" value={employeeForm.monthly_salary} onChange={(event) => setEmployeeForm({ ...employeeForm, monthly_salary: event.target.value })} placeholder="Monthly Salary" required />
-              <select value={employeeForm.currency} onChange={(event) => setEmployeeForm({ ...employeeForm, currency: event.target.value })}><option value="AFN">AFN</option><option value="USD">USD</option></select>
-              <textarea value={employeeForm.notes} onChange={(event) => setEmployeeForm({ ...employeeForm, notes: event.target.value })} placeholder="Notes" />
-              <button className="primary-btn" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save Employee'}</button>
+            <div className="salary-panel-heading"><div><p className="eyebrow">Employee Management</p><h3>{editingEmployeeId ? 'Edit Employee' : 'Add Employee'}</h3></div></div>
+            <form id="employeeForm" className="entry-form" onSubmit={submitEmployee}>
+              <input name="fullName" value={employeeForm.full_name} onChange={(event) => setEmployeeForm({ ...employeeForm, full_name: event.target.value })} placeholder="Full Name" required />
+              <input name="fatherName" value={employeeForm.father_name} onChange={(event) => setEmployeeForm({ ...employeeForm, father_name: event.target.value })} placeholder="Father Name" />
+              <input name="phoneNumber" value={employeeForm.phone} onChange={(event) => setEmployeeForm({ ...employeeForm, phone: event.target.value })} placeholder="Phone Number" />
+              <input name="position" value={employeeForm.position} onChange={(event) => setEmployeeForm({ ...employeeForm, position: event.target.value })} placeholder="Position / Job Title" required />
+              <input name="department" value={employeeForm.department} onChange={(event) => setEmployeeForm({ ...employeeForm, department: event.target.value })} placeholder="Department" />
+              <label className="salary-month-field"><span>Joining Date</span><input name="joiningDate" type="date" value={employeeForm.joining_date} onChange={(event) => setEmployeeForm({ ...employeeForm, joining_date: event.target.value })} required /></label>
+              <input name="monthlySalary" type="number" min="0" step="0.01" value={employeeForm.monthly_salary} onChange={(event) => setEmployeeForm({ ...employeeForm, monthly_salary: event.target.value })} placeholder="Monthly Salary" required />
+              <select name="currency" value={employeeForm.currency} onChange={(event) => setEmployeeForm({ ...employeeForm, currency: event.target.value })}><option value="AFN">AFN</option><option value="USD">USD</option></select>
+              <textarea name="notes" value={employeeForm.notes} onChange={(event) => setEmployeeForm({ ...employeeForm, notes: event.target.value })} placeholder="Notes" />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="primary-btn" type="submit" disabled={saving}>{saving ? 'Saving...' : (editingEmployeeId ? 'Update Employee' : 'Save Employee')}</button>
+                {editingEmployeeId && (
+                  <button className="ghost-btn" type="button" onClick={() => { setEmployeeForm(emptyEmployee); setEditingEmployeeId(null); }}>Cancel</button>
+                )}
+              </div>
             </form>
           </article>
-          <EmployeeList employees={employees} transactions={transactions} reportRows={report?.rows} expanded onPay={(row) => { setActiveTab('Reports'); setPayingRow(row); }} onEditSalary={currentUser?.role === 'Administrator' ? setEditingSalaryRow : null} onDeleteEmployee={currentUser?.role === 'Administrator' ? deleteEmployee : null} onChangeAvatar={currentUser?.role === 'Administrator' ? updateEmployeeAvatar : null} deletingEmployeeId={deletingEmployeeId} uploadingAvatarId={uploadingAvatarId} />
+          <EmployeeList employees={employees} transactions={transactions} reportRows={report?.rows} expanded onPay={(row) => { setActiveTab('Reports'); setPayingRow(row); }} onEditEmployee={currentUser?.role === 'Administrator' ? handleEditEmployee : null} onEditSalary={currentUser?.role === 'Administrator' ? setEditingSalaryRow : null} onDeleteEmployee={currentUser?.role === 'Administrator' ? deleteEmployee : null} onChangeAvatar={currentUser?.role === 'Administrator' ? updateEmployeeAvatar : null} deletingEmployeeId={deletingEmployeeId} uploadingAvatarId={uploadingAvatarId} />
         </div>
       )}
 
@@ -331,6 +366,7 @@ export default function EmployeesSalary({
           onPdf={printReport}
           onExcel={exportExcel}
           onEditSalary={currentUser?.role === 'Administrator' ? setEditingSalaryRow : null}
+          onEditEmployee={currentUser?.role === 'Administrator' ? handleEditEmployee : null}
           onDeleteEmployee={currentUser?.role === 'Administrator' ? deleteEmployee : null}
           deletingEmployeeId={deletingEmployeeId}
           salaryChanges={salaryChanges}
@@ -360,7 +396,7 @@ export default function EmployeesSalary({
   );
 }
 
-function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments, loading, error, onRefresh, onPay, onPrint, onPdf, onExcel, onEditSalary, onDeleteEmployee, deletingEmployeeId, salaryChanges, companyName, companyLogo }) {
+function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments, loading, error, onRefresh, onPay, onPrint, onPdf, onExcel, onEditSalary, onEditEmployee, onDeleteEmployee, deletingEmployeeId, salaryChanges, companyName, companyLogo }) {
   const years = Array.from({ length: 6 }, (_, index) => new Date().getFullYear() - 3 + index);
   return (
     <article className="glass-card salary-panel salary-report-workspace">
@@ -404,7 +440,7 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
                 <td className="salary-remaining">{currency(row.remaining_salary)}</td>
                 <td><span className={`salary-status-badge ${row.payment_status.toLowerCase().replaceAll(' ', '-')}`}>{row.payment_status}</span></td>
                 <td>{row.last_payment_date ? dateLabel(row.last_payment_date) : '-'}</td>
-                <td><div className="salary-row-actions"><button className="primary-btn salary-action-btn" type="button" onClick={() => onPay(row)}>Pay Salary</button>{onEditSalary && <button className="ghost-btn salary-action-btn" type="button" onClick={() => onEditSalary(row)}>Edit Salary</button>}{onDeleteEmployee && <button className="ghost-btn salary-action-btn salary-delete-btn" type="button" disabled={deletingEmployeeId === Number(row.employee_id)} onClick={() => onDeleteEmployee(row)}><Trash2 size={15} /> {deletingEmployeeId === Number(row.employee_id) ? 'Deleting...' : 'Delete'}</button>}</div></td>
+                <td><div className="salary-row-actions"><button className="primary-btn salary-action-btn" type="button" onClick={() => onPay(row)}>Pay Salary</button>{onEditEmployee && <button className="ghost-btn salary-action-btn" type="button" onClick={() => onEditEmployee(row)}>Edit</button>}{onEditSalary && <button className="ghost-btn salary-action-btn" type="button" onClick={() => onEditSalary(row)}>Edit Salary</button>}{onDeleteEmployee && <button className="ghost-btn salary-action-btn salary-delete-btn" type="button" disabled={deletingEmployeeId === Number(row.employee_id)} onClick={() => onDeleteEmployee(row)}><Trash2 size={15} /> {deletingEmployeeId === Number(row.employee_id) ? 'Deleting...' : 'Delete'}</button>}</div></td>
               </tr>
             ))}
             {!rows.length && <tr><td colSpan="10"><EmptyState title="No salary report rows" body="Try changing the search, department, status, month, or year filter." action="Refresh" onAction={onRefresh} /></td></tr>}
@@ -644,7 +680,7 @@ function EmployeeAvatar({ employee, onChangeAvatar, uploading }) {
   );
 }
 
-function EmployeeList({ employees, transactions, reportRows = [], expanded = false, onPay, onEditSalary, onDeleteEmployee, onChangeAvatar, deletingEmployeeId, uploadingAvatarId }) {
+function EmployeeList({ employees, transactions, reportRows = [], expanded = false, onPay, onEditSalary, onEditEmployee, onDeleteEmployee, onChangeAvatar, deletingEmployeeId, uploadingAvatarId }) {
   const rowByEmployee = new Map((reportRows || []).map((row) => [Number(row.employee_id), row]));
   return (
     <article className={`glass-card salary-panel ${expanded ? 'salary-panel-wide' : ''}`}>
@@ -680,6 +716,7 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
             </div>
             <div className="salary-row-actions">
               {onPay && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onPay(row)}>Pay Salary</button>}
+              {onEditEmployee && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onEditEmployee(employee)}>Edit</button>}
               {onEditSalary && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onEditSalary(row)}>Edit Salary</button>}
               {onDeleteEmployee && <button className="ghost-btn salary-list-pay salary-delete-btn" type="button" disabled={deletingEmployeeId === Number(employee.id)} onClick={() => onDeleteEmployee({ ...row, id: employee.id, full_name: employee.full_name, employee_code: employee.employee_code })}><Trash2 size={15} /> {deletingEmployeeId === Number(employee.id) ? 'Deleting...' : 'Delete'}</button>}
             </div>
