@@ -15,6 +15,7 @@ import { buildPrintReport, reportDateRange, waitForCondition, waitForPrintReady,
 import { buildCashBookRows, CASH_BOOK_PAGE_SIZE, currentMonthDateRange, filterCashBookRows, monthDateRangeForDate, summarizeCashBookRows } from './utils/transactions';
 import { employeeSalarySnapshot, salaryMonthStart } from './utils/payroll';
 import useDebouncedValue from './hooks/useDebouncedValue';
+import { Analytics } from '@vercel/analytics/react';
 
 const AccountLedger = lazy(() => import('./pages/AccountLedger'));
 const Accounts = lazy(() => import('./pages/Accounts'));
@@ -1519,6 +1520,7 @@ export default function App() {
       /></Suspense>}
       <ConfirmDialog open={!!confirm} title={confirm?.title} message={confirm?.message} onCancel={() => setConfirm(null)} onConfirm={confirm?.onConfirm} />
       <ToastNotification toast={toast} />
+      <Analytics />
     </div>
   );
 }
