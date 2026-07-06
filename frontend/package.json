@@ -12,7 +12,7 @@
   "dependencies": {
     "@neondatabase/neon-js": "^0.6.2-beta",
     "@vercel/speed-insights": "2.0.0",
-    "axios": "1.8.1",
+    "axios": "1.16.0",
     "googleapis": "144.0.0",
     "i18next": "^26.3.4",
     "i18next-browser-languagedetector": "^8.2.1",
@@ -20,10 +20,10 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-i18next": "^17.0.8",
-    "react-router-dom": "7.1.5"
+    "react-router-dom": "7.18.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "4.3.4",
-    "vite": "6.1.0"
+    "@vitejs/plugin-react": "6.0.3",
+    "vite": "8.1.3"
   }
 }
