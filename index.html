@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BAWAR STAR PLASTIC INDUSTRY - Cash Book</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div class="app-shell">
@@ -18,18 +18,18 @@
         </div>
 
         <nav class="nav-links">
-          <button class="nav-btn active" data-view="dashboard">Dashboard</button>
-          <button class="nav-btn" data-view="cashbook">Cash Book</button>
-          <button class="nav-btn" data-view="ledger">Ledger</button>
-          <button class="nav-btn" data-view="converter">Converter</button>
-          <button class="nav-btn" data-view="settings">Settings</button>
+          <button type="button" class="nav-btn active" data-view="dashboard">Dashboard</button>
+          <button type="button" class="nav-btn" data-view="cashbook">Cash Book</button>
+          <button type="button" class="nav-btn" data-view="ledger">Ledger</button>
+          <button type="button" class="nav-btn" data-view="converter">Converter</button>
+          <button type="button" class="nav-btn" data-view="settings">Settings</button>
         </nav>
 
         <div class="sidebar-card">
           <h3>Quick Actions</h3>
-          <button class="secondary-btn" id="quickPrintBtn">Print Preview</button>
-          <button class="secondary-btn" id="backupBtn">Backup</button>
-          <button class="secondary-btn" id="restoreBtn">Restore</button>
+          <button type="button" class="secondary-btn" id="quickPrintBtn">Print Preview</button>
+          <button type="button" class="secondary-btn" id="backupBtn">Backup</button>
+          <button type="button" class="secondary-btn" id="restoreBtn">Restore</button>
         </div>
       </aside>
 
@@ -40,8 +40,8 @@
             <h2 id="pageTitle">Dashboard</h2>
           </div>
           <div class="topbar-actions">
-            <button class="ghost-btn" id="themeToggle">Toggle Theme</button>
-            <button class="primary-btn" id="printCurrentBtn">Print</button>
+            <button type="button" class="ghost-btn" id="themeToggle">Toggle Theme</button>
+            <button type="button" class="primary-btn" id="printCurrentBtn">Print</button>
           </div>
         </header>
 
@@ -97,12 +97,12 @@
                 <h3>Quick Actions</h3>
               </div>
               <div class="action-grid">
-                <button class="action-btn success" id="quickCashInBtn">Add Cash In</button>
-                <button class="action-btn danger" id="quickCashOutBtn">Add Cash Out</button>
-                <button class="action-btn info" id="quickLedgerBtn">Account Ledger</button>
-                <button class="action-btn neutral" id="quickPrintActionBtn">Print</button>
-                <button class="action-btn neutral" id="quickBackupActionBtn">Backup</button>
-                <button class="action-btn neutral" id="quickRestoreActionBtn">Restore</button>
+                <button type="button" class="action-btn success" id="quickCashInBtn">Add Cash In</button>
+                <button type="button" class="action-btn danger" id="quickCashOutBtn">Add Cash Out</button>
+                <button type="button" class="action-btn info" id="quickLedgerBtn">Account Ledger</button>
+                <button type="button" class="action-btn neutral" id="quickPrintActionBtn">Print</button>
+                <button type="button" class="action-btn neutral" id="quickBackupActionBtn">Backup</button>
+                <button type="button" class="action-btn neutral" id="quickRestoreActionBtn">Restore</button>
               </div>
             </div>
 
@@ -119,11 +119,11 @@
           <div class="section-header glass-card">
             <div>
               <p class="eyebrow">Cash Book</p>
-              <h3>Transaction Entry & Records</h3>
+              <h3>Transaction Entry &amp; Records</h3>
             </div>
             <div class="section-actions">
-              <button class="ghost-btn" id="fullPrintBtn">Print Cash Book</button>
-              <button class="ghost-btn" id="exportCashBookBtn">Export</button>
+              <button type="button" class="ghost-btn" id="fullPrintBtn">Print Cash Book</button>
+              <button type="button" class="ghost-btn" id="exportCashBookBtn">Export</button>
             </div>
           </div>
 
@@ -133,13 +133,13 @@
                 <h3>Cash In Entry</h3>
               </div>
               <form id="cashInForm" class="entry-form">
-                <input type="date" id="cashInDate" title="Cash in date" required />
-                <input type="text" id="cashInName" placeholder="Account / Person / Company" required />
-                <input type="text" id="cashInDetail" placeholder="Detail" required />
-                <input type="number" id="cashInAfn" placeholder="AFN Amount" step="0.01" />
-                <input type="number" id="cashInUsd" placeholder="USD Amount" step="0.01" />
-                <input type="number" id="cashInRate" placeholder="Exchange Rate" step="0.01" />
-                <input type="text" id="cashInNote" placeholder="Note" />
+                <input type="date" id="cashInDate" name="date" title="Cash in date" required>
+                <input type="text" id="cashInName" name="accountName" placeholder="Account / Person / Company" required>
+                <input type="text" id="cashInDetail" name="detail" placeholder="Detail" required>
+                <input type="number" id="cashInAfn" name="afnAmount" placeholder="AFN Amount" step="0.01">
+                <input type="number" id="cashInUsd" name="usdAmount" placeholder="USD Amount" step="0.01">
+                <input type="number" id="cashInRate" name="exchangeRate" placeholder="Exchange Rate" step="0.01">
+                <input type="text" id="cashInNote" name="note" placeholder="Note">
                 <button class="primary-btn full-width" type="submit">Save Cash In</button>
                 <div id="cashInMessage" class="form-message"></div>
               </form>
@@ -150,13 +150,13 @@
                 <h3>Cash Out Entry</h3>
               </div>
               <form id="cashOutForm" class="entry-form">
-                <input type="date" id="cashOutDate" title="Cash out date" required />
-                <input type="text" id="cashOutName" placeholder="Account / Person / Company" required />
-                <input type="text" id="cashOutDetail" placeholder="Detail" required />
-                <input type="number" id="cashOutAfn" placeholder="AFN Amount" step="0.01" />
-                <input type="number" id="cashOutUsd" placeholder="USD Amount" step="0.01" />
-                <input type="number" id="cashOutRate" placeholder="Exchange Rate" step="0.01" />
-                <input type="text" id="cashOutNote" placeholder="Note" />
+                <input type="date" id="cashOutDate" name="date" title="Cash out date" required>
+                <input type="text" id="cashOutName" name="accountName" placeholder="Account / Person / Company" required>
+                <input type="text" id="cashOutDetail" name="detail" placeholder="Detail" required>
+                <input type="number" id="cashOutAfn" name="afnAmount" placeholder="AFN Amount" step="0.01">
+                <input type="number" id="cashOutUsd" name="usdAmount" placeholder="USD Amount" step="0.01">
+                <input type="number" id="cashOutRate" name="exchangeRate" placeholder="Exchange Rate" step="0.01">
+                <input type="text" id="cashOutNote" name="note" placeholder="Note">
                 <button class="primary-btn danger full-width" type="submit">Save Cash Out</button>
                 <div id="cashOutMessage" class="form-message"></div>
               </form>
@@ -167,16 +167,16 @@
             <div class="card-header">
               <h3>Cash Book Records</h3>
               <div class="filters">
-                <input type="search" id="searchInput" placeholder="Search name, detail, date" />
-                <input type="date" id="startDateFilter" title="Start date" />
-                <input type="date" id="endDateFilter" title="End date" />
+                <input type="search" id="searchInput" placeholder="Search name, detail, date">
+                <input type="date" id="startDateFilter" title="Start date">
+                <input type="date" id="endDateFilter" title="End date">
                 <select id="typeFilter" title="Transaction type filter">
                   <option value="all">All</option>
                   <option value="cash-in">Cash In</option>
                   <option value="cash-out">Cash Out</option>
                 </select>
-                <button class="ghost-btn" id="fullscreenTableBtn">Full Screen</button>
-                <button class="ghost-btn" id="clearFiltersBtn">Clear</button>
+                <button type="button" class="ghost-btn" id="fullscreenTableBtn">Full Screen</button>
+                <button type="button" class="ghost-btn" id="clearFiltersBtn">Clear</button>
               </div>
             </div>
             <div class="table-wrapper">
@@ -211,8 +211,8 @@
               <h3>Customer and Company Ledger</h3>
             </div>
             <div class="section-actions">
-              <button class="ghost-btn" id="printLedgerBtn">Print Ledger</button>
-              <button class="ghost-btn" id="exportLedgerBtn">Export Ledger</button>
+              <button type="button" class="ghost-btn" id="printLedgerBtn">Print Ledger</button>
+              <button type="button" class="ghost-btn" id="exportLedgerBtn">Export Ledger</button>
             </div>
           </div>
 
@@ -222,14 +222,14 @@
                 <h3>Create Account</h3>
               </div>
               <form id="accountForm" class="entry-form">
-                <input type="text" id="accountNameInput" placeholder="Customer / Company Name" required />
-                <input type="number" id="openingBalanceInput" placeholder="Opening Balance AFN" step="0.01" />
+                <input type="text" id="accountNameInput" placeholder="Customer / Company Name" required>
+                <input type="number" id="openingBalanceInput" placeholder="Opening Balance AFN" step="0.01">
                 <button class="primary-btn full-width" type="submit">Add Account</button>
               </form>
               <div class="card-header account-subheader">
                 <h3>Search Accounts</h3>
               </div>
-              <input type="search" id="accountSearchInput" placeholder="Search account name" />
+              <input type="search" id="accountSearchInput" placeholder="Search account name">
               <div id="accountList" class="account-list"></div>
             </div>
 
@@ -265,7 +265,7 @@
           <div class="section-header glass-card">
             <div>
               <p class="eyebrow">Currency Converter</p>
-              <h3>AFN & USD Exchange</h3>
+              <h3>AFN &amp; USD Exchange</h3>
             </div>
           </div>
           <div class="entry-grid">
@@ -283,13 +283,13 @@
                 </label>
                 <label>
                   Amount
-                  <input type="number" id="converterAmount" step="0.01" placeholder="Enter amount" />
+                  <input type="number" id="converterAmount" step="0.01" placeholder="Enter amount">
                 </label>
                 <label>
                   Exchange Rate
-                  <input type="number" id="converterRate" step="0.01" placeholder="Exchange rate" />
+                  <input type="number" id="converterRate" step="0.01" placeholder="Exchange rate">
                 </label>
-                <button class="primary-btn full-width" id="saveRateBtn">Save Default Rate</button>
+                <button type="button" class="primary-btn full-width" id="saveRateBtn">Save Default Rate</button>
                 <div id="conversionResult" class="conversion-result"></div>
               </div>
             </div>
@@ -310,26 +310,26 @@
           <div class="section-header glass-card">
             <div>
               <p class="eyebrow">Settings</p>
-              <h3>Company Preferences & Backup</h3>
+              <h3>Company Preferences &amp; Backup</h3>
             </div>
           </div>
           <div class="entry-grid">
             <div class="glass-card form-card">
               <div class="card-header">
-                <h3>Company & Preferences</h3>
+                <h3>Company &amp; Preferences</h3>
               </div>
               <div class="settings-form">
                 <label>
                   Company Name
-                  <input type="text" id="companyNameSetting" />
+                  <input type="text" id="companyNameSetting">
                 </label>
                 <label>
                   Default Currency
-                  <input type="text" id="currencySetting" value="AFN" />
+                  <input type="text" id="currencySetting" value="AFN">
                 </label>
                 <label>
                   Default Exchange Rate
-                  <input type="number" id="exchangeRateSetting" step="0.01" />
+                  <input type="number" id="exchangeRateSetting" step="0.01">
                 </label>
                 <label>
                   Theme
@@ -339,22 +339,22 @@
                   </select>
                 </label>
                 <label class="checkbox-row">
-                  <input type="checkbox" id="printHeaderSetting" checked />
+                  <input type="checkbox" id="printHeaderSetting" checked>
                   <span>Show company header in print</span>
                 </label>
-                <button class="primary-btn full-width" id="saveSettingsBtn">Save Settings</button>
+                <button type="button" class="primary-btn full-width" id="saveSettingsBtn">Save Settings</button>
               </div>
             </div>
             <div class="glass-card form-card">
               <div class="card-header">
-                <h3>Backup & Restore</h3>
+                <h3>Backup &amp; Restore</h3>
               </div>
               <div class="backup-actions">
-                <button class="primary-btn full-width" id="backupSettingsBtn">Export JSON Backup</button>
-                <button class="ghost-btn full-width" id="importSettingsBtn">Import Backup</button>
-                <button class="danger-btn full-width" id="clearDataBtn">Clear All Data</button>
+                <button type="button" class="primary-btn full-width" id="backupSettingsBtn">Export JSON Backup</button>
+                <button type="button" class="ghost-btn full-width" id="importSettingsBtn">Import Backup</button>
+                <button type="button" class="danger-btn full-width" id="clearDataBtn">Clear All Data</button>
               </div>
-              <input type="file" id="backupFileInput" accept="application/json" hidden />
+              <input type="file" id="backupFileInput" accept="application/json" hidden>
               <div id="backupStatus" class="backup-status"></div>
               <p class="muted">Last backup: <span id="lastBackupLabel">Never</span></p>
             </div>
@@ -367,13 +367,13 @@
       <div class="modal-card glass-card">
         <div class="modal-header">
           <h3>Receipt / Voucher</h3>
-          <button id="closeReceiptModal" class="ghost-btn">Close</button>
+          <button type="button" id="closeReceiptModal" class="ghost-btn">Close</button>
         </div>
         <div id="receiptContent" class="receipt-content"></div>
       </div>
     </div>
 
-    <input type="file" id="importLedgerFile" accept="application/json" hidden />
+    <input type="file" id="importLedgerFile" accept="application/json" hidden>
 
     <script src="app.js"></script>
   </body>

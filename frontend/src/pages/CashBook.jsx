@@ -95,6 +95,7 @@ export default function CashBook(props) {
             accounts={props.accounts}
             employees={props.employees}
             onQuickAddEmployee={props.onQuickAddEmployee}
+            language={props.language}
           />
         </section>
       )}

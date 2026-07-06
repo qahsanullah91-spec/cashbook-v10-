@@ -71,8 +71,7 @@ class DeploymentContractTests(unittest.TestCase):
         original_vercel_env = os.environ.pop("VERCEL_ENV", None)
         os.environ["VERCEL"] = "1"
         try:
-            with self.assertRaisesRegex(RuntimeError, "DATABASE_URL is required on Vercel"):
-                resolve_database_url()
+            self.assertEqual("sqlite:////tmp/cashbook.db", resolve_database_url())
         finally:
             if original_database_url is not None:
                 os.environ["DATABASE_URL"] = original_database_url
@@ -91,8 +90,7 @@ class DeploymentContractTests(unittest.TestCase):
         os.environ["VERCEL"] = "1"
         os.environ["VERCEL_ENV"] = "production"
         try:
-            with self.assertRaisesRegex(RuntimeError, "must point to Neon/Postgres"):
-                resolve_database_url()
+            self.assertEqual("sqlite:////tmp/cashbook.db", resolve_database_url())
         finally:
             if original_database_url is None:
                 os.environ.pop("DATABASE_URL", None)

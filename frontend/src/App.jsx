@@ -1188,6 +1188,7 @@ export default function App() {
               setPaymentFilter={setCashPaymentFilter}
               accountFilter={cashAccountFilter}
               setAccountFilter={setCashAccountFilter}
+              language={language}
               onClearFilters={() => {
                 setCashSearch('');
                 setCashStartDate(activeCashMonthRange.startDate);

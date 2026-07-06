@@ -349,17 +349,17 @@ function renderDashboard() {
     els.latestTransactions.innerHTML = '<div class="list-item">No transactions yet.</div>';
     return;
   }
-  els.latestTransactions.innerHTML = latest.map((tx) => `
-    <div class="list-item">
-      <div>
-        <strong>${escapeHtml(tx.accountName || 'Unnamed')}</strong>
-        <p>${escapeHtml(tx.detail || '')}</p>
-      </div>
-      <div class="${tx.type === 'cash-in' ? 'balance-positive' : 'balance-negative'}">
-        ${tx.type === 'cash-in' ? '+' : '-'}${formatCurrency(tx.cashInAfn || tx.cashOutAfn)}
-      </div>
-    </div>
-  `).join('');
+  els.latestTransactions.innerHTML = latest.map((tx) => 
+    '<div class="list-item">' +
+      '<div>' +
+        '<strong>' + escapeHtml(tx.accountName || 'Unnamed') + '</strong>' +
+        '<p>' + escapeHtml(tx.detail || '') + '</p>' +
+      '</div>' +
+      '<div class="' + (tx.type === 'cash-in' ? 'balance-positive' : 'balance-negative') + '">' +
+        (tx.type === 'cash-in' ? '+' : '-') + formatCurrency(tx.cashInAfn || tx.cashOutAfn) +
+      '</div>' +
+    '</div>'
+  ).join('');
 }
 
 function renderTransactions() {
@@ -369,31 +369,29 @@ function renderTransactions() {
     balance += tx.type === 'cash-in' ? Number(tx.cashInAfn || 0) : -Number(tx.cashOutAfn || 0);
     const typeClass = tx.type === 'cash-in' ? 'in' : 'out';
     const typeLabel = tx.type === 'cash-in' ? 'Cash In' : 'Cash Out';
-    return `
-      <tr class="${tx.type}">
-        <td>${index + 1}</td>
-        <td>${escapeHtml(tx.date)}</td>
-        <td>
-          <strong>${escapeHtml(tx.accountName || '')}</strong>
-          <span class="account-meta"><span class="row-type ${typeClass}">${typeLabel}</span></span>
-        </td>
-        <td>${escapeHtml(tx.detail || '')}</td>
-        <td class="money-cell balance-positive">${tx.cashInAfn ? formatCurrency(tx.cashInAfn) : '-'}</td>
-        <td class="money-cell balance-negative">${tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : '-'}</td>
-        <td class="money-cell ${balance >= 0 ? 'balance-positive' : 'balance-negative'}">${formatCurrency(balance)}</td>
-        <td class="money-cell">${tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : '-'}</td>
-        <td class="money-cell">${tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : '-'}</td>
-        <td>${tx.exchangeRate || '-'}</td>
-        <td>${escapeHtml(tx.note || '')}</td>
-        <td>
-          <div class="row-actions">
-            <button class="ghost-btn table-action" data-action="edit" data-id="${tx.id}">Edit</button>
-            <button class="ghost-btn table-action" data-action="receipt" data-id="${tx.id}">Receipt</button>
-            <button class="ghost-btn table-action" data-action="delete" data-id="${tx.id}">Delete</button>
-          </div>
-        </td>
-      </tr>
-    `;
+    return '<tr class="' + tx.type + '">' +
+        '<td>' + (index + 1) + '</td>' +
+        '<td>' + escapeHtml(tx.date) + '</td>' +
+        '<td>' +
+          '<strong>' + escapeHtml(tx.accountName || '') + '</strong>' +
+          '<span class="account-meta"><span class="row-type ' + typeClass + '">' + typeLabel + '</span></span>' +
+        '</td>' +
+        '<td>' + escapeHtml(tx.detail || '') + '</td>' +
+        '<td class="money-cell balance-positive">' + (tx.cashInAfn ? formatCurrency(tx.cashInAfn) : '-') + '</td>' +
+        '<td class="money-cell balance-negative">' + (tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : '-') + '</td>' +
+        '<td class="money-cell ' + (balance >= 0 ? 'balance-positive' : 'balance-negative') + '">' + formatCurrency(balance) + '</td>' +
+        '<td class="money-cell">' + (tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : '-') + '</td>' +
+        '<td class="money-cell">' + (tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : '-') + '</td>' +
+        '<td>' + (tx.exchangeRate || '-') + '</td>' +
+        '<td>' + escapeHtml(tx.note || '') + '</td>' +
+        '<td>' +
+          '<div class="row-actions">' +
+            '<button class="ghost-btn table-action" data-action="edit" data-id="' + tx.id + '">Edit</button>' +
+            '<button class="ghost-btn table-action" data-action="receipt" data-id="' + tx.id + '">Receipt</button>' +
+            '<button class="ghost-btn table-action" data-action="delete" data-id="' + tx.id + '">Delete</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
   }).join('') : '<tr><td colspan="12" style="text-align:center;padding:24px;">No transactions match your filters.</td></tr>';
 
   const totals = filtered.reduce((acc, tx) => {
@@ -404,12 +402,11 @@ function renderTransactions() {
     return acc;
   }, { cashIn: 0, cashOut: 0, usdIn: 0, usdOut: 0 });
 
-  els.tableSummary.innerHTML = `
-    <span>Total Cash In: ${formatCurrency(totals.cashIn)}</span>
-    <span>Total Cash Out: ${formatCurrency(totals.cashOut)}</span>
-    <span>USD In: ${formatCurrency(totals.usdIn, 'USD')}</span>
-    <span>USD Out: ${formatCurrency(totals.usdOut, 'USD')}</span>
-  `;
+  els.tableSummary.innerHTML = 
+    '<span>Total Cash In: ' + formatCurrency(totals.cashIn) + '</span>' +
+    '<span>Total Cash Out: ' + formatCurrency(totals.cashOut) + '</span>' +
+    '<span>USD In: ' + formatCurrency(totals.usdIn, 'USD') + '</span>' +
+    '<span>USD Out: ' + formatCurrency(totals.usdOut, 'USD') + '</span>';
 
   els.transactionsTableBody.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', () => handleTableAction(button.dataset.action, button.dataset.id));
@@ -433,13 +430,16 @@ function handleQuickSubmit(event, type) {
   event.preventDefault();
   const form = type === 'cash-in' ? els.cashInForm : els.cashOutForm;
   const messageEl = type === 'cash-in' ? els.cashInMessage : els.cashOutMessage;
-  const date = form.querySelector('input[type="date"]').value;
-  const name = form.querySelectorAll('input[type="text"]')[0]?.value?.trim();
-  const detail = form.querySelectorAll('input[type="text"]')[1]?.value?.trim();
-  const afnAmount = toAmount(form.querySelectorAll('input[type="number"]')[0]?.value || 0);
-  const usdAmount = toAmount(form.querySelectorAll('input[type="number"]')[1]?.value || 0);
-  const rate = toAmount(form.querySelectorAll('input[type="number"]')[2]?.value || state.settings.exchangeRate);
-  const note = form.querySelectorAll('input[type="text"]')[2]?.value?.trim();
+  const elements = form.elements;
+
+  // Select values explicitly by input 'name' attributes
+  const date = elements['date']?.value;
+  const name = elements['accountName']?.value?.trim();
+  const detail = elements['detail']?.value?.trim();
+  const afnAmount = toAmount(elements['afnAmount']?.value || 0);
+  const usdAmount = toAmount(elements['usdAmount']?.value || 0);
+  const rate = toAmount(elements['exchangeRate']?.value || state.settings.exchangeRate);
+  const note = elements['note']?.value?.trim();
   const editId = form.getAttribute('data-edit-id');
 
   if (!date || !name || !detail) {
@@ -480,7 +480,10 @@ function handleQuickSubmit(event, type) {
   saveState();
   renderAll();
   form.reset();
-  form.querySelector('input[type="date"]').value = date;
+  
+  // Restore the date to save the user from re-entering it
+  if (elements['date']) elements['date'].value = date;
+  
   form.removeAttribute('data-edit-id');
   showMessage(messageEl, `${type === 'cash-in' ? 'Cash In' : 'Cash Out'} saved successfully.`, 'success');
 }
@@ -504,18 +507,21 @@ function handleTableAction(action, id) {
 }
 
 function fillEditForm(tx) {
-  const dateInput = document.getElementById('cashInDate');
   const form = tx.type === 'cash-in' ? els.cashInForm : els.cashOutForm;
-  const dateField = form.querySelector('input[type="date"]');
-  const textFields = form.querySelectorAll('input[type="text"]');
-  const numberFields = form.querySelectorAll('input[type="number"]');
-  dateField.value = tx.date;
-  textFields[0].value = tx.accountName || '';
-  textFields[1].value = tx.detail || '';
-  numberFields[0].value = tx.type === 'cash-in' ? tx.cashInAfn : tx.cashOutAfn;
-  numberFields[1].value = tx.type === 'cash-in' ? tx.usdIn : tx.usdOut;
-  numberFields[2].value = tx.exchangeRate || state.settings.exchangeRate;
-  textFields[2].value = tx.note || '';
+  const elements = form.elements;
+
+  // Safely assign values to fields by their 'name' attribute
+  if (elements['date']) elements['date'].value = tx.date || '';
+  if (elements['accountName']) elements['accountName'].value = tx.accountName || '';
+  if (elements['detail']) elements['detail'].value = tx.detail || '';
+  
+  const afnAmount = tx.type === 'cash-in' ? tx.cashInAfn : tx.cashOutAfn;
+  const usdAmount = tx.type === 'cash-in' ? tx.usdIn : tx.usdOut;
+  
+  if (elements['afnAmount']) elements['afnAmount'].value = afnAmount || '';
+  if (elements['usdAmount']) elements['usdAmount'].value = usdAmount || '';
+  if (elements['exchangeRate']) elements['exchangeRate'].value = tx.exchangeRate || state.settings.exchangeRate;
+  if (elements['note']) elements['note'].value = tx.note || '';
 
   if (tx.type === 'cash-in') {
     form.setAttribute('data-edit-id', tx.id);
@@ -567,17 +573,17 @@ function getAccountBalance(accountName) {
 function renderAccounts() {
   const search = els.accountSearchInput.value.toLowerCase();
   const filtered = state.accounts.filter((account) => account.name.toLowerCase().includes(search));
-  els.accountList.innerHTML = filtered.length ? filtered.map((account) => `
-    <div class="account-item ${account.name === state.selectedAccount ? 'active' : ''}">
-      <div>
-        <strong>${escapeHtml(account.name)}</strong>
-        <span class="account-meta">${formatCurrency(getAccountBalance(account.name))}</span>
-      </div>
-      <div>
-        <button class="ghost-btn table-action" data-account="${escapeHtml(account.name)}">Select</button>
-      </div>
-    </div>
-  `).join('') : '<div class="list-item">No accounts found.</div>';
+  els.accountList.innerHTML = filtered.length ? filtered.map((account) => 
+    '<div class="account-item ' + (account.name === state.selectedAccount ? 'active' : '') + '">' +
+      '<div>' +
+        '<strong>' + escapeHtml(account.name) + '</strong>' +
+        '<span class="account-meta">' + formatCurrency(getAccountBalance(account.name)) + '</span>' +
+      '</div>' +
+      '<div>' +
+        '<button class="ghost-btn table-action" data-account="' + escapeHtml(account.name) + '">Select</button>' +
+      '</div>' +
+    '</div>'
+  ).join('') : '<div class="list-item">No accounts found.</div>';
   els.accountList.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', () => {
       state.selectedAccount = button.dataset.account;
@@ -608,34 +614,31 @@ function renderLedger() {
   const totalDebit = transactions.reduce((sum, tx) => sum + Number(tx.cashOutAfn || 0), 0);
   const finalBalance = runningBalance + totalCredit - totalDebit;
 
-  els.ledgerSummary.innerHTML = `
-    <div class="receipt-grid">
-      <div><strong>Opening Balance</strong><div>${formatCurrency(runningBalance)}</div></div>
-      <div><strong>Total Debit</strong><div>${formatCurrency(totalDebit)}</div></div>
-      <div><strong>Total Credit</strong><div>${formatCurrency(totalCredit)}</div></div>
-      <div><strong>Final Balance</strong><div>${formatCurrency(finalBalance)}</div></div>
-    </div>
-  `;
+  els.ledgerSummary.innerHTML = 
+    '<div class="receipt-grid">' +
+      '<div><strong>Opening Balance</strong><div>' + formatCurrency(runningBalance) + '</div></div>' +
+      '<div><strong>Total Debit</strong><div>' + formatCurrency(totalDebit) + '</div></div>' +
+      '<div><strong>Total Credit</strong><div>' + formatCurrency(totalCredit) + '</div></div>' +
+      '<div><strong>Final Balance</strong><div>' + formatCurrency(finalBalance) + '</div></div>' +
+    '</div>';
 
   els.ledgerTableBody.innerHTML = transactions.length ? transactions.map((tx, index) => {
     const delta = tx.type === 'cash-in' ? Number(tx.cashInAfn || 0) : -Number(tx.cashOutAfn || 0);
     runningBalance += delta;
-    return `
-      <tr>
-        <td>${index + 1}</td>
-        <td>${escapeHtml(tx.date)}</td>
-        <td>${escapeHtml(tx.detail || '')}</td>
-        <td class="money-cell balance-positive">${tx.cashInAfn ? formatCurrency(tx.cashInAfn) : '-'}</td>
-        <td class="money-cell balance-negative">${tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : '-'}</td>
-        <td class="money-cell ${runningBalance >= 0 ? 'balance-positive' : 'balance-negative'}">${formatCurrency(runningBalance)}</td>
-        <td class="money-cell">${tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : '-'}</td>
-        <td class="money-cell">${tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : '-'}</td>
-        <td>${escapeHtml(tx.note || '')}</td>
-        <td>
-          <button class="ghost-btn table-action" data-action="receipt" data-id="${tx.id}">Receipt</button>
-        </td>
-      </tr>
-    `;
+    return '<tr>' +
+        '<td>' + (index + 1) + '</td>' +
+        '<td>' + escapeHtml(tx.date) + '</td>' +
+        '<td>' + escapeHtml(tx.detail || '') + '</td>' +
+        '<td class="money-cell balance-positive">' + (tx.cashInAfn ? formatCurrency(tx.cashInAfn) : '-') + '</td>' +
+        '<td class="money-cell balance-negative">' + (tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : '-') + '</td>' +
+        '<td class="money-cell ' + (runningBalance >= 0 ? 'balance-positive' : 'balance-negative') + '">' + formatCurrency(runningBalance) + '</td>' +
+        '<td class="money-cell">' + (tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : '-') + '</td>' +
+        '<td class="money-cell">' + (tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : '-') + '</td>' +
+        '<td>' + escapeHtml(tx.note || '') + '</td>' +
+        '<td>' +
+          '<button class="ghost-btn table-action" data-action="receipt" data-id="' + tx.id + '">Receipt</button>' +
+        '</td>' +
+      '</tr>';
   }).join('') : '<tr><td colspan="10" style="text-align:center;padding:24px;">No transactions for this account.</td></tr>';
 
   els.ledgerTableBody.querySelectorAll('button').forEach((button) => {
@@ -827,28 +830,26 @@ function printTransactionsView() {
   const rows = getFilteredTransactions();
   const metrics = getMetrics();
   let runningBalance = 0;
-  const content = `
-    <html>
-      <head><title>${escapeHtml(state.settings.companyName)} - Cash Book</title><style>${getPrintStyles()}</style></head>
-      <body>
-        <h1>${escapeHtml(state.settings.companyName)}</h1>
-        <h2>CASH BOOK / RECORDS</h2>
-        <p>Date: ${new Date().toLocaleDateString()}</p>
-        <div class="summary">
-          <span>Cash In: ${formatCurrency(metrics.cashInAfn)}</span>
-          <span>Cash Out: ${formatCurrency(metrics.cashOutAfn)}</span>
-          <span>Balance: ${formatCurrency(metrics.afnBalance)}</span>
-        </div>
-        <table>
-          <thead><tr><th>SN</th><th>Date</th><th>Name</th><th>Detail</th><th>Cash In</th><th>Cash Out</th><th>Balance</th><th>USD In</th><th>USD Out</th><th>Exchange Rate</th><th>Note</th></tr></thead>
-          <tbody>${rows.map((tx, index) => {
+  const content = '<html>' +
+      '<head><title>' + escapeHtml(state.settings.companyName) + ' - Cash Book</title><style>' + getPrintStyles() + '</style></head>' +
+      '<body>' +
+        '<h1>' + escapeHtml(state.settings.companyName) + '</h1>' +
+        '<h2>CASH BOOK / RECORDS</h2>' +
+        '<p>Date: ' + new Date().toLocaleDateString() + '</p>' +
+        '<div class="summary">' +
+          '<span>Cash In: ' + formatCurrency(metrics.cashInAfn) + '</span>' +
+          '<span>Cash Out: ' + formatCurrency(metrics.cashOutAfn) + '</span>' +
+          '<span>Balance: ' + formatCurrency(metrics.afnBalance) + '</span>' +
+        '</div>' +
+        '<table>' +
+          '<thead><tr><th>SN</th><th>Date</th><th>Name</th><th>Detail</th><th>Cash In</th><th>Cash Out</th><th>Balance</th><th>USD In</th><th>USD Out</th><th>Exchange Rate</th><th>Note</th></tr></thead>' +
+          '<tbody>' + rows.map((tx, index) => {
             runningBalance += tx.type === 'cash-in' ? Number(tx.cashInAfn || 0) : -Number(tx.cashOutAfn || 0);
-            return `<tr><td>${index + 1}</td><td>${escapeHtml(tx.date)}</td><td>${escapeHtml(tx.accountName || '')}</td><td>${escapeHtml(tx.detail || '')}</td><td>${tx.cashInAfn ? formatCurrency(tx.cashInAfn) : ''}</td><td>${tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : ''}</td><td>${formatCurrency(runningBalance)}</td><td>${tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : ''}</td><td>${tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : ''}</td><td>${tx.exchangeRate || ''}</td><td>${escapeHtml(tx.note || '')}</td></tr>`;
-          }).join('')}</tbody>
-        </table>
-      </body>
-    </html>
-  `;
+            return '<tr><td>' + (index + 1) + '</td><td>' + escapeHtml(tx.date) + '</td><td>' + escapeHtml(tx.accountName || '') + '</td><td>' + escapeHtml(tx.detail || '') + '</td><td>' + (tx.cashInAfn ? formatCurrency(tx.cashInAfn) : '') + '</td><td>' + (tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : '') + '</td><td>' + formatCurrency(runningBalance) + '</td><td>' + (tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : '') + '</td><td>' + (tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : '') + '</td><td>' + (tx.exchangeRate || '') + '</td><td>' + escapeHtml(tx.note || '') + '</td></tr>';
+          }).join('') + '</tbody>' +
+        '</table>' +
+      '</body>' +
+    '</html>';
   printWindow.document.write(content);
   printWindow.document.close();
   printWindow.focus();
@@ -864,30 +865,28 @@ function printLedgerView() {
   const totalCredit = transactions.reduce((sum, tx) => sum + Number(tx.cashInAfn || 0), 0);
   const totalDebit = transactions.reduce((sum, tx) => sum + Number(tx.cashOutAfn || 0), 0);
   const finalBalance = Number(account?.openingBalance || 0) + totalCredit - totalDebit;
-  const content = `
-    <html>
-      <head><title>${escapeHtml(state.settings.companyName)} - Ledger</title><style>${getPrintStyles()}</style></head>
-      <body>
-        <h1>${escapeHtml(state.settings.companyName)}</h1>
-        <h2>ACCOUNT LEDGER - ${escapeHtml(accountName)}</h2>
-        <p>Date: ${new Date().toLocaleDateString()}</p>
-        <div class="summary">
-          <div>Opening Balance: ${formatCurrency(account?.openingBalance || 0)}</div>
-          <div>Total Credit: ${formatCurrency(totalCredit)}</div>
-          <div>Total Debit: ${formatCurrency(totalDebit)}</div>
-          <div>Final Balance: ${formatCurrency(finalBalance)}</div>
-        </div>
-        <table>
-          <thead><tr><th>SN</th><th>Date</th><th>Detail</th><th>Cash In</th><th>Cash Out</th><th>Balance</th><th>USD In</th><th>USD Out</th><th>Note</th></tr></thead>
-          <tbody>${transactions.reduce((rows, tx, index) => {
+  const content = '<html>' +
+      '<head><title>' + escapeHtml(state.settings.companyName) + ' - Ledger</title><style>' + getPrintStyles() + '</style></head>' +
+      '<body>' +
+        '<h1>' + escapeHtml(state.settings.companyName) + '</h1>' +
+        '<h2>ACCOUNT LEDGER - ' + escapeHtml(accountName) + '</h2>' +
+        '<p>Date: ' + new Date().toLocaleDateString() + '</p>' +
+        '<div class="summary">' +
+          '<div>Opening Balance: ' + formatCurrency(account?.openingBalance || 0) + '</div>' +
+          '<div>Total Credit: ' + formatCurrency(totalCredit) + '</div>' +
+          '<div>Total Debit: ' + formatCurrency(totalDebit) + '</div>' +
+          '<div>Final Balance: ' + formatCurrency(finalBalance) + '</div>' +
+        '</div>' +
+        '<table>' +
+          '<thead><tr><th>SN</th><th>Date</th><th>Detail</th><th>Cash In</th><th>Cash Out</th><th>Balance</th><th>USD In</th><th>USD Out</th><th>Note</th></tr></thead>' +
+          '<tbody>' + transactions.reduce((rows, tx, index) => {
             rows.balance += tx.type === 'cash-in' ? Number(tx.cashInAfn || 0) : -Number(tx.cashOutAfn || 0);
-            rows.html.push(`<tr><td>${index + 1}</td><td>${escapeHtml(tx.date)}</td><td>${escapeHtml(tx.detail || '')}</td><td>${tx.cashInAfn ? formatCurrency(tx.cashInAfn) : ''}</td><td>${tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : ''}</td><td>${formatCurrency(rows.balance)}</td><td>${tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : ''}</td><td>${tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : ''}</td><td>${escapeHtml(tx.note || '')}</td></tr>`);
+            rows.html.push('<tr><td>' + (index + 1) + '</td><td>' + escapeHtml(tx.date) + '</td><td>' + escapeHtml(tx.detail || '') + '</td><td>' + (tx.cashInAfn ? formatCurrency(tx.cashInAfn) : '') + '</td><td>' + (tx.cashOutAfn ? formatCurrency(tx.cashOutAfn) : '') + '</td><td>' + formatCurrency(rows.balance) + '</td><td>' + (tx.usdIn ? formatCurrency(tx.usdIn, 'USD') : '') + '</td><td>' + (tx.usdOut ? formatCurrency(tx.usdOut, 'USD') : '') + '</td><td>' + escapeHtml(tx.note || '') + '</td></tr>');
             return rows;
-          }, { balance: Number(account?.openingBalance || 0), html: [] }).html.join('')}</tbody>
-        </table>
-      </body>
-    </html>
-  `;
+          }, { balance: Number(account?.openingBalance || 0), html: [] }).html.join('') + '</tbody>' +
+        '</table>' +
+      '</body>' +
+    '</html>';
   printWindow.document.write(content);
   printWindow.document.close();
   printWindow.focus();
@@ -895,40 +894,39 @@ function printLedgerView() {
 }
 
 function openReceipt(tx) {
-  els.receiptContent.innerHTML = `
-    <div class="receipt-head">
-      <div>
-        <h2>${state.settings.companyName}</h2>
-        <p>Receipt / Voucher</p>
-      </div>
-      <div>
-        <strong>Receipt No:</strong> ${tx.id.slice(0, 8)}<br />
-        <strong>Date:</strong> ${tx.date}
-      </div>
-    </div>
-    <div class="receipt-grid">
-      <div><strong>Name:</strong> ${escapeHtml(tx.accountName || '')}</div>
-      <div><strong>Detail:</strong> ${escapeHtml(tx.detail || '')}</div>
-      <div><strong>Type:</strong> ${tx.type === 'cash-in' ? 'Cash In' : 'Cash Out'}</div>
-      <div><strong>AFN Amount:</strong> ${formatCurrency(tx.type === 'cash-in' ? tx.cashInAfn : tx.cashOutAfn)}</div>
-      <div><strong>USD Amount:</strong> ${tx.type === 'cash-in' ? formatCurrency(tx.usdIn || 0, 'USD') : formatCurrency(tx.usdOut || 0, 'USD')}</div>
-      <div><strong>Exchange Rate:</strong> ${tx.exchangeRate || state.settings.exchangeRate}</div>
-      <div><strong>Note:</strong> ${escapeHtml(tx.note || '')}</div>
-    </div>
-    <div class="signature-line">
-      <div>Prepared By</div>
-      <div>Approved By</div>
-    </div>
-    <div class="signature-line">
-      <div>____________________</div>
-      <div>____________________</div>
-    </div>
-    <div class="signature-line">
-      <div>Cashier</div>
-      <div>Manager</div>
-    </div>
-    <button class="primary-btn" onclick="window.print()">Print Receipt</button>
-  `;
+  els.receiptContent.innerHTML = 
+    '<div class="receipt-head">' +
+      '<div>' +
+        '<h2>' + escapeHtml(state.settings.companyName) + '</h2>' +
+        '<p>Receipt / Voucher</p>' +
+      '</div>' +
+      '<div>' +
+        '<strong>Receipt No:</strong> ' + escapeHtml(tx.id.slice(0, 8)) + '<br>' +
+        '<strong>Date:</strong> ' + escapeHtml(tx.date) +
+      '</div>' +
+    '</div>' +
+    '<div class="receipt-grid">' +
+      '<div><strong>Name:</strong> ' + escapeHtml(tx.accountName || '') + '</div>' +
+      '<div><strong>Detail:</strong> ' + escapeHtml(tx.detail || '') + '</div>' +
+      '<div><strong>Type:</strong> ' + (tx.type === 'cash-in' ? 'Cash In' : 'Cash Out') + '</div>' +
+      '<div><strong>AFN Amount:</strong> ' + formatCurrency(tx.type === 'cash-in' ? tx.cashInAfn : tx.cashOutAfn) + '</div>' +
+      '<div><strong>USD Amount:</strong> ' + (tx.type === 'cash-in' ? formatCurrency(tx.usdIn || 0, 'USD') : formatCurrency(tx.usdOut || 0, 'USD')) + '</div>' +
+      '<div><strong>Exchange Rate:</strong> ' + escapeHtml(tx.exchangeRate || state.settings.exchangeRate) + '</div>' +
+      '<div><strong>Note:</strong> ' + escapeHtml(tx.note || '') + '</div>' +
+    '</div>' +
+    '<div class="signature-line">' +
+      '<div>Prepared By</div>' +
+      '<div>Approved By</div>' +
+    '</div>' +
+    '<div class="signature-line">' +
+      '<div>____________________</div>' +
+      '<div>____________________</div>' +
+    '</div>' +
+    '<div class="signature-line">' +
+      '<div>Cashier</div>' +
+      '<div>Manager</div>' +
+    '</div>' +
+    '<button class="primary-btn" type="button" onclick="window.print()">Print Receipt</button>';
   els.receiptModal.classList.remove('hidden');
 }
 
