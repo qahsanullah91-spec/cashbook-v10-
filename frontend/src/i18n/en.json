@@ -111,6 +111,8 @@
     "salaryChangeHistory": "Salary Change History",
     "noPreviousChanges": "No previous salary changes.",
     "csv": "CSV",
+    "json": "JSON",
+    "excel": "Excel",
     "noSalaryChanges": "No salary changes recorded.",
     "oldSalary": "Old Salary",
     "reasonLabel": "Reason"

@@ -679,7 +679,7 @@ function SalaryChangeHistoryReport({ changes = [], companyName, companyLogo }) {
     printWindow.print();
   }
 
-  return <section className="salary-change-report"><div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.auditReport')}</p><h3>{t('payroll.salaryChangeHistory')}</h3></div><div className="salary-report-actions"><button className="ghost-btn" type="button" onClick={printHistory}><Printer size={17} /> Print / PDF</button><button className="ghost-btn" type="button" onClick={() => download('csv')}>{t('payroll.csv')}</button><button className="ghost-btn" type="button" onClick={() => download('json')}>JSON</button><button className="ghost-btn" type="button" onClick={() => download('excel')}>Excel</button></div></div><div className="salary-report-table-wrap"><table className="salary-report-table salary-change-table"><thead><tr><th>{t('payroll.employeeName')}</th><th>{t('payroll.oldSalary')}</th><th>{t('payroll.newSalary')}</th><th>{t('payroll.effectiveDate')}</th><th>{t('payroll.changedBy')}</th><th>{t('payroll.reasonLabel')}</th></tr></thead><tbody>{changes.map((change) => <tr key={change.id}><td>{change.employee_name}</td><td>{currency(change.old_salary, change.old_currency)}</td><td>{currency(change.new_salary, change.new_currency)}</td><td>{dateLabel(change.effective_date)}</td><td>{change.changed_by}</td><td>{change.reason}</td></tr>)}{!changes.length && <tr><td colSpan="6">{t('payroll.noSalaryChanges')}</td></tr>}</tbody></table></div></section>;
+  return <section className="salary-change-report"><div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.auditReport')}</p><h3>{t('payroll.salaryChangeHistory')}</h3></div><div className="salary-report-actions"><button className="ghost-btn" type="button" onClick={printHistory}><Printer size={17} /> Print / PDF</button><button className="ghost-btn" type="button" onClick={() => download('csv')}>{t('payroll.csv')}</button><button className="ghost-btn" type="button" onClick={() => download('json')}>{t('payroll.json')}</button><button className="ghost-btn" type="button" onClick={() => download('excel')}>{t('payroll.excel')}</button></div></div><div className="salary-report-table-wrap"><table className="salary-report-table salary-change-table"><thead><tr><th>{t('payroll.employeeName')}</th><th>{t('payroll.oldSalary')}</th><th>{t('payroll.newSalary')}</th><th>{t('payroll.effectiveDate')}</th><th>{t('payroll.changedBy')}</th><th>{t('payroll.reasonLabel')}</th></tr></thead><tbody>{changes.map((change) => <tr key={change.id}><td>{change.employee_name}</td><td>{currency(change.old_salary, change.old_currency)}</td><td>{currency(change.new_salary, change.new_currency)}</td><td>{dateLabel(change.effective_date)}</td><td>{change.changed_by}</td><td>{change.reason}</td></tr>)}{!changes.length && <tr><td colSpan="6">{t('payroll.noSalaryChanges')}</td></tr>}</tbody></table></div></section>;
 }
 
 function SalaryMiniStat({ label, value, tone = 'blue' }) {
@@ -770,11 +770,9 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
     </article>
   );
 }
-
 function EmptyState({ title, body, action, onAction }) {
   return <div className="salary-empty-state"><UsersRound size={32} /><h3>{title}</h3><p>{body}</p><button className="primary-btn" type="button" onClick={onAction}>{action}</button></div>;
 }
-
 function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) {
   const generated = new Date().toLocaleString();
   const reportMonth = `${getMonthName(filters.month)} ${filters.year}`;
@@ -799,220 +797,261 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
     ? ('<img class="logo" src="' + escapeHtml(companyLogo) + '" id="report-logo" />')
     : ('<div class="logo logo-placeholder"><span>' + escapeHtml(initials) + '</span></div>');
 
-  return `<!doctype html><html><head><title>Employees Salary Report – ${escapeHtml(reportMonth)}</title><style>
+  const stylesheet = `
     /* ===== BASE STYLES (screen + print) ===== */
     *, *::before, *::after { box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #1f2937;
       margin: 0;
       padding: 0;
-      font-size: 10px;
-      line-height: 1.5;
-      background: #f3f4f6;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
+      background-color: #f3f4f6;
+      color: #1f2937;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .print-container {
-      max-width: 297mm;
+      background-color: #ffffff;
       margin: 0 auto;
-      background: #fff;
+      width: 297mm;
+      min-height: 210mm;
+      padding: 12mm 15mm;
+      box-sizing: border-box;
+      position: relative;
     }
 
     .document-frame {
-      min-height: 190mm;
-      padding: 8mm 10mm;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
     }
 
-    /* --- Header --- */
+    /* ===== HEADER STYLES ===== */
     .report-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      border-bottom: 3px solid #1d4ed8;
-      padding-bottom: 14px;
-      margin-bottom: 22px;
+      align-items: center;
+      border-bottom: 2.5px solid #2563eb;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
     }
+
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
     }
+
     .logo {
-      width: 56px;
-      height: 56px;
+      height: 52px;
+      width: 52px;
       object-fit: contain;
       border-radius: 6px;
+      background: #f8fafc;
+      padding: 2px;
+      border: 1px solid #e2e8f0;
     }
+
     .logo-placeholder {
-      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 18px;
-      letter-spacing: -0.5px;
-      text-transform: uppercase;
-      box-shadow: 0 4px 10px rgba(29, 78, 216, 0.15);
-      border: none !important;
-    }
-    .report-title h2 {
-      font-size: 10px;
-      margin: 0 0 2px 0;
-      color: #1d4ed8;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-weight: 700;
-    }
-    .report-title h1 {
-      font-size: 20px;
-      margin: 0;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-      text-transform: uppercase;
-      line-height: 1.15;
-      color: #111827;
-    }
-    .subtitle {
-      font-size: 11px;
-      font-weight: 600;
-      color: #4b5563;
-      margin-top: 3px;
-    }
-    .report-meta {
-      text-align: right;
-      font-size: 9px;
-      color: #6b7280;
-      line-height: 1.6;
-      flex-shrink: 0;
-    }
-    .report-meta strong {
-      display: block;
-      color: #111827;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 2px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 16px;
+      letter-spacing: 0.05em;
     }
 
-    /* --- Summary Metrics Grid --- */
-    .section-title {
+    .report-title h2 {
+      margin: 0;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #3b82f6;
+      font-weight: 700;
+    }
+
+    .report-title h1 {
+      margin: 2px 0 0 0;
+      font-size: 17px;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.02em;
+    }
+
+    .report-title .subtitle {
+      margin-top: 1px;
+      font-size: 10.5px;
+      color: #4b5563;
+      font-weight: 500;
+    }
+
+    .report-meta {
+      text-align: right;
       font-size: 10px;
+      color: #374151;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .report-meta strong {
+      font-size: 11px;
+      color: #111827;
+    }
+
+    /* ===== SUMMARY SECTION ===== */
+    .section-title {
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #4b5563;
-      margin: 20px 0 10px 0;
+      letter-spacing: 0.08em;
+      color: #374151;
+      margin: 0 0 8px 0;
+      border-left: 3px solid #3b82f6;
+      padding-left: 8px;
     }
+
     .summary-metrics {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: 10px;
-      margin-bottom: 22px;
-    }
-    .metric-box {
-      border: 1.5px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 10px 12px;
-      background: #f9fafb;
-    }
-    .metric-box-green {
-      border-color: #a7f3d0;
-      background: #ecfdf5;
-    }
-    .metric-box-green .metric-value {
-      color: #059669;
-    }
-    .metric-box-amber {
-      border-color: #fde68a;
-      background: #fffbeb;
-    }
-    .metric-box-amber .metric-value {
-      color: #d97706;
-    }
-    .metric-label {
-      font-size: 8px;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-      font-weight: 700;
-      display: block;
-    }
-    .metric-value {
-      font-size: 14px;
-      font-weight: 800;
-      color: #111827;
-      display: block;
+      margin-bottom: 15px;
     }
 
-    /* --- Table --- */
+    .metric-box {
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .metric-box-green {
+      background-color: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .metric-box-amber {
+      background-color: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .metric-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #4b5563;
+    }
+
+    .metric-box-green .metric-label {
+      color: #166534;
+    }
+
+    .metric-box-amber .metric-label {
+      color: #92400e;
+    }
+
+    .metric-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #111827;
+      font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    .metric-box-green .metric-value {
+      color: #15803d;
+    }
+
+    .metric-box-amber .metric-value {
+      color: #b45309;
+    }
+
+    /* ===== TABLE STYLES ===== */
+    .table-section {
+      margin-bottom: 15px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
-      page-break-inside: auto;
-      margin-bottom: 28px;
-      font-size: 9.5px;
-    }
-    thead { display: table-header-group; }
-    tr { page-break-inside: avoid; page-break-after: auto; }
-    tbody tr:nth-child(even) { background: #f9fafb; }
-    tbody tr:hover { background: #f3f4f6; }
-    th, td {
-      padding: 9px 6px;
+      font-size: 10.5px;
       text-align: left;
-      vertical-align: middle;
-      word-break: normal;
     }
+
     th {
-      background: #f1f5f9;
-      border-bottom: 2px solid #1e293b;
-      border-top: 1px solid #e2e8f0;
-      color: #475569;
-      font-size: 8px;
+      background-color: #f3f4f6;
+      color: #1f2937;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      vertical-align: bottom;
+      letter-spacing: 0.03em;
+      padding: 7px 8px;
+      border: 1px solid #d1d5db;
+      font-size: 9px;
     }
-    td {
-      border-bottom: 1px solid #e5e7eb;
-    }
-    tfoot td {
-      font-weight: 800;
-      background: #f8fafc !important;
-      border-top: 2px solid #1e293b;
-      border-bottom: 2px solid #1e293b;
-      font-size: 10px;
-    }
-    .index { width: 35px; text-align: center; color: #9ca3af; }
-    .code { font-family: 'SF Mono', 'Cascadia Code', Consolas, monospace; font-size: 9px; color: #6b7280; }
-    .name { font-weight: 700; color: #111827; }
-    .money {
-      font-family: 'SF Mono', 'Cascadia Code', Consolas, monospace;
-      font-weight: 700;
-      text-align: right;
-      white-space: nowrap;
-    }
-    .paid-money { color: #059669; }
-    .due-money { color: #dc2626; }
 
-    /* --- Status Badges --- */
+    td {
+      padding: 6px 8px;
+      border: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      background-color: #ffffff;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .index {
+      text-align: center;
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    .code {
+      font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .name {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .money {
+      text-align: right;
+      font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      font-weight: 600;
+    }
+
+    .paid-money {
+      color: #166534;
+      font-weight: 700;
+    }
+
+    .due-money {
+      color: #b45309;
+      font-weight: 700;
+    }
+
+    /* ===== STATUS BADGES ===== */
     .status-badge {
       display: inline-block;
-      padding: 3px 8px;
-      border-radius: 4px;
+      padding: 2.5px 7px;
       font-size: 8px;
       font-weight: 700;
-      border: 1.5px solid currentColor;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
-      white-space: nowrap;
-    }
+      letter-spacing: 0.05em;
+      border-radius: 4px;
       text-align: center;
       min-width: 65px;
     }
@@ -1112,6 +1151,9 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
         margin: 10mm;
       }
       body { background: #fff !important; }
+      .print-container { max-width: none; box-shadow: none; }
+      .document-frame { padding: 2mm 4mm; }
+      tbody tr:nth-child(even) { background: #f9fafb !important; }
     }
 
     /* ===== SCREEN PREVIEW ===== */
