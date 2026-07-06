@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Building2,
   CheckCircle2,
@@ -21,29 +22,30 @@ function GlassSurface({ as: Element = 'section', className = '', children }) {
 }
 
 function DashboardHeader({ report, onClose }) {
+  const { t } = useTranslation();
   const now = new Date();
   return (
     <GlassSurface as="header" className="preview-dashboard-header no-print">
       <div className="preview-header-copy">
-        <span className="preview-kicker">Document Studio</span>
-        <h1>Print Preview Center</h1>
-        <p>Professional Document Management & Company Branding System</p>
+        <span className="preview-kicker">{t('print.documentStudio')}</span>
+        <h1>{t('print.printPreviewCenter')}</h1>
+        <p>{t('print.brandingSystemSubtitle')}</p>
       </div>
       <div className="preview-header-meta">
         <div className="system-online">
           <span aria-hidden="true" />
-          <strong>System Online</strong>
+          <strong>{t('print.systemOnline')}</strong>
         </div>
         <div>
-          <span>Current User</span>
+          <span>{t('print.currentUser')}</span>
           <strong>{report.preparedBy || 'System User'}</strong>
         </div>
         <div>
-          <span>Date</span>
+          <span>{t('print.dateLabel')}</span>
           <strong>{now.toLocaleDateString()}</strong>
         </div>
         <div>
-          <span>Time</span>
+          <span>{t('print.timeLabel')}</span>
           <strong>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>
         </div>
         <button className="preview-icon-close" onClick={onClose} aria-label="Close print preview">
@@ -55,11 +57,12 @@ function DashboardHeader({ report, onClose }) {
 }
 
 function BusinessOverview({ report }) {
+  const { t } = useTranslation();
   const cards = [
-    { icon: Building2, title: 'Company', value: report.company.companyName || 'BAWAR STAR PLASTIC INDUSTRY' },
-    { icon: Factory, title: 'Industry', value: 'Plastic Manufacturing' },
-    { icon: ShieldCheck, title: 'Administrator', value: report.preparedBy || 'System User' },
-    { icon: CheckCircle2, title: 'Print Status', value: 'Ready for A4 output' }
+    { icon: Building2, title: t('print.companyLabel'), value: report.company.companyName || 'BAWAR STAR PLASTIC INDUSTRY' },
+    { icon: Factory, title: t('print.industryLabel'), value: t('print.industryValue') },
+    { icon: ShieldCheck, title: t('print.administratorLabel'), value: report.preparedBy || 'System User' },
+    { icon: CheckCircle2, title: t('print.printStatusLabel'), value: t('print.printStatusValue') }
   ];
 
   return (
@@ -76,6 +79,7 @@ function BusinessOverview({ report }) {
 }
 
 function PrintWorkspace({ report, zoom, status, error, documentRef, onRetry }) {
+  const { t } = useTranslation();
   const documentReady = (status === 'ready' || status === 'printing') && report;
   return (
     <div className="print-workspace-shell">
@@ -84,15 +88,15 @@ function PrintWorkspace({ report, zoom, status, error, documentRef, onRetry }) {
       {status === 'loading' && (
         <div className="print-preview-state" role="status">
           <span className="print-preview-spinner" aria-hidden="true" />
-          <strong>Preparing report</strong>
-          <p>Loading data, fonts, and company assets...</p>
+          <strong>{t('print.preparingReport')}</strong>
+          <p>{t('print.loadingAssets')}</p>
         </div>
       )}
       {status === 'error' && (
         <div className="print-preview-state print-preview-error" role="alert">
-          <strong>Print preview could not be prepared</strong>
+          <strong>{t('print.errorPreparing')}</strong>
           <p>{error}</p>
-          <button className="primary-btn" type="button" onClick={onRetry}>Try Again</button>
+          <button className="primary-btn" type="button" onClick={onRetry}>{t('print.tryAgain')}</button>
         </div>
       )}
       {documentReady ? (
@@ -106,14 +110,15 @@ function PrintWorkspace({ report, zoom, status, error, documentRef, onRetry }) {
 }
 
 function ActionDock({ onPrint, onThemeToggle, onDownloadData, onSettings, onLogout, onClose, onDownloadPng, zoom, setZoom, printDisabled }) {
+  const { t } = useTranslation();
   const actions = [
-    { label: 'Print', icon: Printer, tone: 'blue', onClick: onPrint, disabled: printDisabled },
-    { label: 'Export PDF', icon: FileDown, tone: 'green', onClick: onPrint, disabled: printDisabled },
-    { label: 'Export PNG', icon: Download, tone: 'purple', onClick: onDownloadPng, disabled: printDisabled },
-    { label: 'Download', icon: DatabaseBackup, tone: 'cyan', onClick: onDownloadData },
-    { label: 'Theme', icon: Moon, tone: 'glass', onClick: onThemeToggle },
-    { label: 'Settings', icon: Settings, tone: 'glass', onClick: onSettings },
-    { label: 'Logout', icon: LogOut, tone: 'red', onClick: onLogout || onClose }
+    { label: t('print.dockPrint'), icon: Printer, tone: 'blue', onClick: onPrint, disabled: printDisabled },
+    { label: t('print.dockExportPdf'), icon: FileDown, tone: 'green', onClick: onPrint, disabled: printDisabled },
+    { label: t('print.dockExportPng'), icon: Download, tone: 'purple', onClick: onDownloadPng, disabled: printDisabled },
+    { label: t('print.dockDownload'), icon: DatabaseBackup, tone: 'cyan', onClick: onDownloadData },
+    { label: t('print.dockTheme'), icon: Moon, tone: 'glass', onClick: onThemeToggle },
+    { label: t('print.dockSettings'), icon: Settings, tone: 'glass', onClick: onSettings },
+    { label: t('print.dockLogout'), icon: LogOut, tone: 'red', onClick: onLogout || onClose }
   ];
 
   return (
