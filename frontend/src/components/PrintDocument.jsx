@@ -8,21 +8,29 @@ const amount = (value, code = 'AFN') => Number(value || 0) ? currency(value, cod
 function ReportHeader({ report }) {
   const { t } = useTranslation();
   const company = report.company || {};
+  const generatedDate = new Date(report.generatedAt).toLocaleString();
+  const jalaliDate = jalaliDateLabel(report.generatedAt);
+  const preparedBy = report.preparedBy || 'Ahsanullah Qureshi';
+  const phone = company.companyPhone || '+93 700 345 630';
+  const email = company.companyEmail || 'INFO@BAWARSTAR.COM';
+
   return (
     <header className="print-document-header">
       <CompanyLogo logo={company.companyLogo} name={company.companyName} size="lg" />
       <div className="print-document-heading">
-        <span className="print-document-kicker">{t('print.officialReport')}</span>
+        <span className="print-document-kicker">{t('print.officialReport') || 'OFFICIAL ACCOUNTING REPORT'}</span>
         <h1>{company.companyName || 'BAWAR STAR PLASTIC INDUSTRY'}</h1>
-        <h2>{report.title}</h2>
+        <h2>{report.title || 'Cash Management Dashboard Report'}</h2>
         <div className="print-document-meta">
-          <span>{t('print.generated')}{new Date(report.generatedAt).toLocaleString()}</span>
-          {report.dateDisplayFormat !== 'gregorian' ? <span>{t('print.jalali')}{jalaliDateLabel(report.generatedAt)}</span> : null}
-          <span>{t('print.preparedByLabel')}{report.preparedBy || 'System User'}</span>
+          <span>{t('print.generated')}{generatedDate}</span>
+          <span> | </span>
+          <span>{t('print.jalali')}{jalaliDate}</span>
+          <span> | </span>
+          <span>{t('print.preparedByLabel')}{preparedBy}</span>
         </div>
-        {(company.companyAddress || company.companyPhone || company.companyEmail) && (
-          <p>{[company.companyAddress, company.companyPhone, company.companyEmail].filter(Boolean).join(' | ')}</p>
-        )}
+        <p className="print-document-contact">
+          {phone} | {email.toUpperCase()}
+        </p>
       </div>
     </header>
   );
