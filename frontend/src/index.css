@@ -3674,10 +3674,31 @@ body::after,
   min-height: 48px;
   padding: 8px 10px;
   border: 1px solid #cbd5e1;
+  border-top: 3px solid #3b82f6;
   border-radius: 6px;
-  background: #f8fafc;
+  background: #eff6ff;
   break-inside: avoid;
   page-break-inside: avoid;
+}
+
+.print-summary-grid > div.print-metric-green {
+  border-color: #bbf7d0;
+  border-top: 3px solid #10b981;
+  background: #f0fdf4;
+}
+
+.print-summary-grid > div.print-metric-red {
+  border-color: #fecaca;
+  border-top: 3px solid #ef4444;
+  background: #fef2f2;
+}
+
+.print-summary-grid .print-metric-green strong {
+  color: #16a34a;
+}
+
+.print-summary-grid .print-metric-red strong {
+  color: #dc2626;
 }
 
 .print-summary-grid span {
@@ -8162,20 +8183,8 @@ button:focus-visible,
 
 @media print {
   @page {
-    size: A4 portrait;
-    margin: 12mm;
-  }
-
-  @page landscape-layout {
     size: A4 landscape;
     margin: 8mm;
-  }
-
-  .print-document-cashbook,
-  .print-document-ledger,
-  .print-document-report,
-  .print-report {
-    page: landscape-layout !important;
   }
 
   /* Universal reset to prevent box-shadows/borders from translating to black outlines during print */
