@@ -735,7 +735,7 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
   const generated = new Date().toLocaleString();
   const reportMonth = `${getMonthName(filters.month)} ${filters.year}`;
   const tableRows = rows.map((row, index) => {
-    const statusClass = row.payment_status === 'Paid' ? 'paid' : row.payment_status === 'Partial Paid' ? 'partial' : row.payment_status === 'Advance' ? 'advance' : 'unpaid';
+    const statusClass = row.payment_status === 'Paid' ? 'status-paid' : row.payment_status === 'Partial Paid' ? 'status-partial' : row.payment_status === 'Advance' ? 'status-advance' : 'status-unpaid';
     return `
       <tr>
         <td class="index">${index + 1}</td>
@@ -745,35 +745,294 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
         <td class="money">${currency(row.total_payable_salary ?? row.monthly_salary)}</td>
         <td class="money paid-money">${currency(row.paid_salary)}</td>
         <td class="money due-money">${currency(row.remaining_salary)}</td>
-        <td><span class="status ${statusClass}">${row.payment_status}</span></td>
+        <td><span class="status-badge ${statusClass}">${row.payment_status}</span></td>
         <td>${row.last_payment_date || '-'}</td>
       </tr>
     `;
   }).join('');
   return `<!doctype html><html><head><title>Employees Salary Report</title><style>
-    html,body{background:#fff!important;margin:0;padding:0;color:#111827;font-family:Inter,"Segoe UI",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    @page{size:A4 landscape;margin:8mm}
-    .print-container{width:100%;max-width:281mm;margin:auto;background:#fff}
-    .document-frame{border:1px solid #d8e1f0;min-height:190mm;padding:9mm 10mm 8mm;box-sizing:border-box}
-    header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:3px solid #2563eb;padding:0 0 10px;margin:0 0 12px}
-    .brand{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px}.logo{width:58px;height:58px;object-fit:contain}.document-label{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#2563eb}
-    h1{margin:2px 0 1px;font-size:21px;letter-spacing:.02em;line-height:1.08}.subtitle{font-weight:800;font-size:13px;color:#111827}.meta{font-size:11px;color:#475569;text-align:right;line-height:1.5}.meta strong{display:block;color:#111827;font-size:12px}
-    .summary-title{margin:0 0 6px;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#475569}
-    .summary{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}.summary div{border:1px solid #cbd5e1;background:#f8fbff;padding:7px 8px;min-height:35px}.summary span{display:block;font-size:9.5px;font-weight:750;letter-spacing:.02em;color:#64748b}.summary strong{display:block;margin-top:2px;font:800 13px/1.1 "Courier New",monospace;color:#0f172a}
-    .table-title{margin:0 0 6px;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#475569}
-    table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10.5px}th,td{border:1px solid #cbd5e1;padding:5px 6px;text-align:left;vertical-align:top;word-break:normal}th{background:#eaf2ff;color:#1d4ed8;font-size:9.5px;text-transform:uppercase;letter-spacing:.03em}tbody tr:nth-child(even){background:#f8fafc}tfoot td{font-weight:900;background:#f1f5f9}
-    .index{width:24px;text-align:center}.code{font-family:"Courier New",monospace}.name{font-weight:800}.money{font-family:"Courier New",monospace;font-weight:800;text-align:right;white-space:nowrap}.paid-money{color:#047857}.due-money{color:#c2410c}
-    .status{display:inline-block;border-radius:999px;padding:2px 7px;font-size:9.5px;font-weight:900;border:1px solid #cbd5e1;white-space:nowrap}.status.paid{color:#047857;background:#ecfdf5;border-color:#a7f3d0}.status.partial{color:#b45309;background:#fffbeb;border-color:#fde68a}.status.unpaid{color:#b91c1c;background:#fef2f2;border-color:#fecaca}.status.advance{color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe}
-    .signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:18mm;margin-top:18mm}.signatures div{border-top:1px solid #111827;padding-top:6px;text-align:center;font-size:10px;font-weight:800;color:#334155}
-    footer{display:flex;justify-content:space-between;border-top:1px solid #cbd5e1;margin-top:9mm;padding-top:5px;font-size:9.5px;color:#64748b}
-    @media print{html,body{background:#fff!important}.print-container{max-width:none}.document-frame{border-color:#cbd5e1}tr{page-break-inside:avoid;break-inside:avoid}}
+    @media print {
+      @page { 
+        size: A4 landscape; 
+        margin: 12mm; 
+      }
+      
+      * { 
+        box-sizing: border-box; 
+        -webkit-print-color-adjust: exact !important; 
+        print-color-adjust: exact !important; 
+      }
+      
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        color: #1d1d1f; 
+        margin: 0; 
+        padding: 0; 
+        font-size: 10px; 
+        line-height: 1.4; 
+        background: #fff !important;
+      }
+      
+      .print-container {
+        width: 100%;
+        max-width: none;
+        margin: auto;
+        background: #fff;
+      }
+
+      .document-frame {
+        min-height: 190mm;
+        padding: 4mm 4mm;
+        box-sizing: border-box;
+      }
+
+      /* --- Header --- */
+      .report-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-end; 
+        border-bottom: 2px solid #1d1d1f; 
+        padding-bottom: 12px; 
+        margin-bottom: 20px; 
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo {
+        width: 58px;
+        height: 58px;
+        object-fit: contain;
+      }
+      .report-title h1 { 
+        font-size: 20px; 
+        margin: 0; 
+        font-weight: 700; 
+        letter-spacing: -0.5px; 
+        text-transform: uppercase; 
+        line-height: 1.1;
+      }
+      .report-title h2 { 
+        font-size: 11px; 
+        margin: 0 0 4px 0; 
+        color: #0066cc; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+      }
+      .subtitle {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1d1d1f;
+        margin-top: 2px;
+      }
+      .report-meta { 
+        text-align: right; 
+        font-size: 9px; 
+        color: #86868b; 
+        line-height: 1.5;
+      }
+      .report-meta strong {
+        display: block;
+        color: #1d1d1f;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      /* --- Summary Metrics Grid --- */
+      .section-title { 
+        font-size: 10px; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        color: #86868b; 
+        margin: 24px 0 8px 0; 
+      }
+      .summary-metrics { 
+        display: grid; 
+        grid-template-columns: repeat(6, 1fr); 
+        gap: 12px; 
+        margin-bottom: 24px; 
+      }
+      .metric-box { 
+        border: 1px solid #d2d2d7; 
+        border-radius: 6px; 
+        padding: 10px 12px; 
+        background: #fafafa; 
+        min-height: 45px;
+      }
+      .metric-label { 
+        font-size: 8.5px; 
+        color: #86868b; 
+        text-transform: uppercase; 
+        margin-bottom: 4px; 
+        font-weight: 600;
+        display: block;
+      }
+      .metric-value { 
+        font-size: 13px; 
+        font-weight: 700; 
+        color: #1d1d1f; 
+        display: block;
+      }
+      
+      /* --- Modern Data Table --- */
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        table-layout: fixed;
+        page-break-inside: auto; 
+        margin-bottom: 30px; 
+        font-size: 9.5px;
+      }
+      thead { 
+        display: table-header-group; 
+      }
+      tr { 
+        page-break-inside: avoid; 
+        page-break-after: auto; 
+      }
+      th, td {
+        padding: 8px 4px;
+        text-align: left;
+        vertical-align: top;
+        word-break: normal;
+        border-left: none;
+        border-right: none;
+      }
+      th { 
+        border-bottom: 1px solid #1d1d1f; 
+        color: #86868b; 
+        font-size: 8.5px; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        vertical-align: bottom; 
+      }
+      td { 
+        border-bottom: 1px solid #e5e5ea; 
+        padding: 10px 4px; 
+      }
+      tfoot td {
+        font-weight: 700;
+        background: transparent;
+        border-top: 1px solid #1d1d1f;
+        border-bottom: none;
+      }
+      .index {
+        width: 32px;
+        text-align: center;
+      }
+      .code {
+        font-family: Courier, monospace;
+      }
+      .name {
+        font-weight: 700;
+      }
+      .money {
+        font-family: Courier, monospace;
+        font-weight: 700;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .paid-money {
+        color: #15803d;
+      }
+      .due-money {
+        color: #b91c1c;
+      }
+      
+      /* --- Status Badges --- */
+      .status-badge { 
+        display: inline-block; 
+        padding: 3px 6px; 
+        border-radius: 4px; 
+        font-size: 8.5px; 
+        font-weight: 700; 
+        border: 1px solid currentColor; 
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .status-paid { color: #15803d; background: #f0fdf4; }
+      .status-partial { color: #b45309; background: #fffbeb; }
+      .status-unpaid { color: #b91c1c; background: #fef2f2; }
+      .status-advance { color: #7c3aed; background: #f5f3ff; }
+      
+      /* --- Signatures --- */
+      .signatures { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 60px; 
+        margin-top: 50px; 
+        page-break-inside: avoid; 
+      }
+      .sig-line { 
+        border-top: 1px solid #1d1d1f; 
+        padding-top: 8px; 
+        text-align: center; 
+        font-size: 10px; 
+        font-weight: 600; 
+      }
+      footer {
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #e5e5ea;
+        margin-top: 9mm;
+        padding-top: 5px;
+        font-size: 9.5px;
+        color: #86868b;
+      }
+    }
   </style></head><body><main class="print-container"><section class="document-frame">
-    <header><div class="brand">${companyLogo ? `<img class="logo" src="${companyLogo}" />` : ''}<div><span class="document-label">Official payroll report</span><h1>${companyName}</h1><div class="subtitle">Employees Salary Report</div></div></div><div class="meta"><strong>Report Term: ${reportMonth}</strong>Generated: ${generated}<br/>Currency: AFN</div></header>
-    <p class="summary-title">Summary Metrics</p>
-    <section class="summary"><div><span>Total Employees</span><strong>${summary.total_employees}</strong></div><div><span>Total Payable</span><strong>${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</strong></div><div><span>Total Paid</span><strong>${currency(summary.total_paid_this_month)}</strong></div><div><span>Total Carry Forward</span><strong>${currency(summary.total_remaining_salary)}</strong></div><div><span>Fully Paid</span><strong>${summary.fully_paid_employees}</strong></div><div><span>Unpaid</span><strong>${summary.unpaid_employees}</strong></div></section>
-    <p class="table-title">Salary Record Details</p>
+    <header class="report-header">
+      <div class="brand">
+        ${companyLogo ? `<img class="logo" src="${companyLogo}" />` : ''}
+        <div class="report-title">
+          <h2>Official Payroll Report</h2>
+          <h1>${companyName}</h1>
+          <div class="subtitle">Employees Salary Report</div>
+        </div>
+      </div>
+      <div class="report-meta">
+        <strong>Report Term: ${reportMonth}</strong>
+        <div>Generated: ${generated}</div>
+        <div>Currency: AFN</div>
+      </div>
+    </header>
+    <p class="section-title">Summary Metrics</p>
+    <section class="summary-metrics">
+      <div class="metric-box">
+        <span class="metric-label">Total Employees</span>
+        <strong class="metric-value">${summary.total_employees}</strong>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Total Payable</span>
+        <strong class="metric-value">${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</strong>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Total Paid</span>
+        <strong class="metric-value">${currency(summary.total_paid_this_month)}</strong>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Total Carry Forward</span>
+        <strong class="metric-value">${currency(summary.total_remaining_salary)}</strong>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Fully Paid</span>
+        <strong class="metric-value">${summary.fully_paid_employees}</strong>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Unpaid</span>
+        <strong class="metric-value">${summary.unpaid_employees}</strong>
+      </div>
+    </section>
+    <p class="section-title">Salary Record Details</p>
     <table><thead><tr><th>S.No</th><th>Employee ID</th><th>Employee Name</th><th>Department / Position</th><th>Total Payable</th><th>Paid Salary</th><th>Carry Forward</th><th>Payment Status</th><th>Last Payment Date</th></tr></thead><tbody>${tableRows}</tbody><tfoot><tr><td colspan="4">Totals</td><td class="money">${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</td><td class="money">${currency(summary.total_paid_this_month)}</td><td class="money">${currency(summary.total_remaining_salary)}</td><td colspan="2"></td></tr></tfoot></table>
-    <section class="signatures"><div>Prepared By</div><div>Accountant Signature</div><div>Manager Signature</div></section>
+    <section class="signatures">
+      <div class="sig-line">Prepared By</div>
+      <div class="sig-line">Accountant Signature</div>
+      <div class="sig-line">Manager Signature</div>
+    </section>
     <footer><span>Generated by Bawar Star Cash Book</span><span>${companyName}</span></footer>
   </section>
   </main></body></html>`;

@@ -8,7 +8,7 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 class AccountBase(BaseModel):
     name: str
-    account_type: Literal["customer", "supplier", "worker", "factory", "expense", "other"] = "other"
+    account_type: Literal["customer", "supplier", "worker", "factory", "bank", "expense", "other"] = "other"
     phone: str = ""
     address: str = ""
     opening_balance_afn: float = 0
@@ -22,7 +22,7 @@ class AccountCreate(AccountBase):
 
 class AccountUpdate(BaseModel):
     name: Optional[str] = None
-    account_type: Optional[Literal["customer", "supplier", "worker", "factory", "expense", "other"]] = None
+    account_type: Optional[Literal["customer", "supplier", "worker", "factory", "bank", "expense", "other"]] = None
     phone: Optional[str] = None
     address: Optional[str] = None
     opening_balance_afn: Optional[float] = None

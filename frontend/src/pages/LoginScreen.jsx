@@ -6,7 +6,8 @@ import {
   Keyboard,
   LockKeyhole,
   Power,
-  ShieldCheck
+  ShieldCheck,
+  User
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import CompanyLogo from '../components/CompanyLogo';
@@ -26,7 +27,7 @@ function timeLabel(now) {
 }
 
 export default function LoginScreen({ users, rememberedUsername, onLogin, connectionError, isPreparing, onRetryConnection, companyName, companyLogo }) {
-  const [selected, setSelected] = useState(null);
+  const [username, setUsername] = useState(rememberedUsername || '');
   const [password, setPassword] = useState('');
   const [rememberUser, setRememberUser] = useState(Boolean(rememberedUsername));
   const [message, setMessage] = useState('');
@@ -50,24 +51,21 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
   }, []);
 
   useEffect(() => {
-    const remembered = users.find((user) => user.username === rememberedUsername);
-    setSelected(remembered || users[0] || { id: 'default-admin', full_name: 'Administrator', username: 'admin', role: 'Administrator', is_active: true });
-  }, [users, rememberedUsername]);
-
-  const activeUsers = useMemo(() => users.filter((user) => user.is_active !== false), [users]);
-  const visibleUsers = activeUsers.length ? activeUsers : [{ id: 'default-admin', full_name: 'Administrator', username: 'admin', role: 'Administrator', is_active: true }];
+    if (rememberedUsername) {
+      setUsername(rememberedUsername);
+    }
+  }, [rememberedUsername]);
 
   async function submit(event) {
     event?.preventDefault();
-    const loginUser = selected || visibleUsers[0];
-    if (!loginUser || !password.trim()) {
-      setMessage('Enter your password to continue.');
+    if (!username.trim() || !password.trim()) {
+      setMessage('Enter your username and password to continue.');
       return;
     }
     setIsSubmitting(true);
     setMessage('');
     try {
-      await onLogin({ username: loginUser.username, password, remember_user: rememberUser });
+      await onLogin({ username: username.trim(), password, remember_user: rememberUser });
     } catch (error) {
       setMessage(error.message);
       setPassword('');
@@ -159,43 +157,27 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
             <span className="login-lock-icon"><LockKeyhole size={21} /></span>
             <div>
               <h2>Sign in</h2>
-              <p>Select your account and enter your password.</p>
-            </div>
-          </div>
-
-          {visibleUsers.length > 1 && (
-            <div className="login-user-picker" aria-label="Select user account">
-              {visibleUsers.map((user) => (
-                <button
-                  key={user.id}
-                  className={selected?.id === user.id ? 'selected' : ''}
-                  onClick={() => {
-                    setSelected(user);
-                    setPassword('');
-                    setMessage('');
-                  }}
-                  type="button"
-                >
-                  <span>{initials(user.full_name)}</span>
-                  <strong>{user.full_name}</strong>
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="login-selected-user">
-            <div className="login-avatar">
-              {selected?.avatar_path
-                ? <img src={selected.avatar_path} alt={`${selected.full_name} profile`} />
-                : <span>{initials(selected?.full_name)}</span>}
-            </div>
-            <div>
-              <strong>{selected?.full_name || 'Administrator'}</strong>
-              <span>{selected?.role || 'Administrator'}</span>
+              <p>Enter your username and password to access the system.</p>
             </div>
           </div>
 
           <form className="login-form" onSubmit={submit}>
+            <label className="login-field-label" htmlFor="login-username">Username</label>
+            <div className="login-password-shell" style={{ marginBottom: '16px' }}>
+              <User size={18} />
+              <input
+                id="login-username"
+                type="text"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                placeholder="Enter your username"
+                autoComplete="username"
+                autoFocus
+                required
+                disabled={isSubmitting || isPreparing}
+              />
+            </div>
+
             <label className="login-field-label" htmlFor="login-password">Password</label>
             <div className="login-password-shell">
               <LockKeyhole size={18} />
@@ -206,7 +188,7 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Enter your password"
                 autoComplete="current-password"
-                autoFocus
+                required
                 disabled={isSubmitting || isPreparing}
               />
               <button
