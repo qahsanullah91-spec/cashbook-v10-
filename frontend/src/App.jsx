@@ -25,6 +25,30 @@ const Settings = lazy(() => import('./pages/Settings'));
 const EmployeesSalary = lazy(() => import('./pages/EmployeesSalary'));
 const GlassPrintPreview = lazy(() => import('./components/GlassPrintPreview'));
 
+const appTranslations = {
+  English: {
+    'Preparing secure setup...': 'Preparing secure setup...',
+    'Preparing secure login...': 'Preparing secure login...',
+    'Loading workspace...': 'Loading workspace...',
+    'Loading latest cash book data...': 'Loading latest cash book data...',
+    'Loading print studio...': 'Loading print studio...'
+  },
+  Pashto: {
+    'Preparing secure setup...': 'د خوندي تنظیم چمتو کول...',
+    'Preparing secure login...': 'د خوندي ننوتلو چمتو کول...',
+    'Loading workspace...': 'د کاري ځای پورته کول...',
+    'Loading latest cash book data...': 'د نغدو پیسو وروستي معلومات پورته کول...',
+    'Loading print studio...': 'د چاپ سټوډیو پورته کول...'
+  },
+  Dari: {
+    'Preparing secure setup...': 'تهیه ترتیب امن...',
+    'Preparing secure login...': 'تهیه ورود امن...',
+    'Loading workspace...': 'بارگذاری فضای کاری...',
+    'Loading latest cash book data...': 'بارگذاری آخرین اطلاعات کتابچه نقدی...',
+    'Loading print studio...': 'بارگذاری استودیو چاپ...'
+  }
+};
+
 const today = todayInputValue();
 const activeCashMonthRange = currentMonthDateRange();
 
@@ -83,6 +107,19 @@ export default function App() {
   const [exchangeRate, setExchangeRate] = useState('64.30');
   const [printHeader, setPrintHeader] = useState(true);
   const [language, setLanguage] = useState('English');
+  const t = (key) => {
+    const lang = language || 'English';
+    const safeLang = ['English', 'Dari', 'Pashto'].includes(lang) ? lang : 'English';
+    const dict = appTranslations[safeLang];
+    if (dict && Object.prototype.hasOwnProperty.call(dict, key)) {
+      return dict[key];
+    }
+    const defaultDict = appTranslations['English'];
+    if (defaultDict && Object.prototype.hasOwnProperty.call(defaultDict, key)) {
+      return defaultDict[key];
+    }
+    return key;
+  };
   const [dateDisplayFormat, setDateDisplayFormat] = useState('dual');
   const [printFooterText, setPrintFooterText] = useState('Prepared by BAWAR STAR PLASTIC INDUSTRY');
   const [autoLogoutMinutes, setAutoLogoutMinutes] = useState(30);
@@ -1017,10 +1054,9 @@ export default function App() {
 
   const printReceipt = async () => {
     if (!receipt) return;
-    const content = `
-      <html><head><title>Receipt</title><style>${printStyles()}</style></head>
-      <body>${receiptHtml(receipt)}</body></html>
-    `;
+    const content = 
+      '<html><head><title>Receipt</title><style>' + printStyles() + '</style></head>' +
+      '<body>' + receiptHtml(receipt) + '</body></html>';
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) {
       showToast('Allow popups to print the receipt.', 'error');
@@ -1065,38 +1101,37 @@ export default function App() {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 
-  const receiptHtml = (tx) => `
-    <main class="receipt-sheet">
-      <header class="receipt-header">
-        <div>
-          <h1>${escapeHtml(companyName)}</h1>
-          <p>${escapeHtml(companyAddress)}</p>
-          <p>${escapeHtml(companyPhone)}</p>
-        </div>
-        <div class="receipt-meta">
-          <h2>RECEIPT / VOUCHER</h2>
-          <div><strong>No:</strong> ${escapeHtml(tx.transaction_no || String(tx.id).slice(0, 8))}</div>
-          <div><strong>Date:</strong> ${escapeHtml(dateDisplayFormat === 'gregorian' ? dateLabel(tx.date) : dateDisplayFormat === 'persian' ? jalaliDateLabel(tx.date) : `${jalaliDateLabel(tx.date)} | ${dateLabel(tx.date)}`)}</div>
-        </div>
-      </header>
-      <div class="type-badge">${tx.transaction_type === 'cash_in' ? 'Cash Receipt' : 'Payment Voucher'}</div>
-      <table>
-        <tr><th>Account Name</th><td>${escapeHtml(tx.account_name)}</td></tr>
-        <tr><th>Details</th><td>${escapeHtml(tx.detail)}</td></tr>
-        <tr class="amount-row"><th>Amount AFN</th><td>${escapeHtml(tx.transaction_type === 'cash_in' ? currency(tx.cash_in_afn) : currency(tx.cash_out_afn))}</td></tr>
-        <tr><th>Amount USD</th><td>${escapeHtml(tx.transaction_type === 'cash_in' ? currency(tx.usd_in, 'USD') : currency(tx.usd_out, 'USD'))}</td></tr>
-        <tr><th>Exchange Rate</th><td>${escapeHtml(tx.exchange_rate)}</td></tr>
-        <tr><th>Payment Method</th><td>${escapeHtml(tx.payment_method || 'cash')}</td></tr>
-        <tr><th>Note</th><td>${escapeHtml(tx.note || '-')}</td></tr>
-      </table>
-      <div class="signature-grid">
-        <div class="signature">Prepared By</div>
-        <div class="signature">Received By</div>
-        <div class="signature">Authorized By</div>
-      </div>
-      <footer class="receipt-footer">${escapeHtml(printFooterText)}</footer>
-    </main>
-  `;
+  const receiptHtml = (tx) => 
+    '<main class="receipt-sheet">' +
+      '<header class="receipt-header">' +
+        '<div>' +
+          '<h1>' + escapeHtml(companyName) + '</h1>' +
+          '<p>' + escapeHtml(companyAddress) + '</p>' +
+          '<p>' + escapeHtml(companyPhone) + '</p>' +
+        '</div>' +
+        '<div class="receipt-meta">' +
+          '<h2>RECEIPT / VOUCHER</h2>' +
+          '<div><strong>No:</strong> ' + escapeHtml(tx.transaction_no || String(tx.id).slice(0, 8)) + '</div>' +
+          '<div><strong>Date:</strong> ' + escapeHtml(dateDisplayFormat === 'gregorian' ? dateLabel(tx.date) : dateDisplayFormat === 'persian' ? jalaliDateLabel(tx.date) : `${jalaliDateLabel(tx.date)} | ${dateLabel(tx.date)}`) + '</div>' +
+        '</div>' +
+      '</header>' +
+      '<div class="type-badge">' + (tx.transaction_type === 'cash_in' ? 'Cash Receipt' : 'Payment Voucher') + '</div>' +
+      '<table>' +
+        '<tr><th>Account Name</th><td>' + escapeHtml(tx.account_name) + '</td></tr>' +
+        '<tr><th>Details</th><td>' + escapeHtml(tx.detail) + '</td></tr>' +
+        '<tr class="amount-row"><th>Amount AFN</th><td>' + escapeHtml(tx.transaction_type === 'cash_in' ? currency(tx.cash_in_afn) : currency(tx.cash_out_afn)) + '</td></tr>' +
+        '<tr><th>Amount USD</th><td>' + escapeHtml(tx.transaction_type === 'cash_in' ? currency(tx.usd_in, 'USD') : currency(tx.usd_out, 'USD')) + '</td></tr>' +
+        '<tr><th>Exchange Rate</th><td>' + escapeHtml(tx.exchange_rate) + '</td></tr>' +
+        '<tr><th>Payment Method</th><td>' + escapeHtml(tx.payment_method || 'cash') + '</td></tr>' +
+        '<tr><th>Note</th><td>' + escapeHtml(tx.note || '-') + '</td></tr>' +
+      '</table>' +
+      '<div class="signature-grid">' +
+        '<div class="signature">Prepared By</div>' +
+        '<div class="signature">Received By</div>' +
+        '<div class="signature">Authorized By</div>' +
+      '</div>' +
+      '<footer class="receipt-footer">' + escapeHtml(printFooterText) + '</footer>' +
+    '</main>';
 
   function toggleTableFullscreen() {
     const node = tableRef.current;
@@ -1119,7 +1154,7 @@ export default function App() {
     return (
       <>
         <SecuritySetup mode="setup" onSetup={onSetupOwner} companyName={companyName} companyLogo={companyLogo} />
-        {authLoading && <div className="login-loading">Preparing secure setup...</div>}
+        {authLoading && <div className="login-loading">{t('Preparing secure setup...')}</div>}
         {pageError && <div className="login-loading error">{pageError}</div>}
         <ToastNotification toast={toast} />
       </>
@@ -1148,7 +1183,7 @@ export default function App() {
           companyName={companyName}
           companyLogo={companyLogo}
         />
-        {authLoading && <div className="login-loading">Preparing secure login...</div>}
+        {authLoading && <div className="login-loading">{t('Preparing secure login...')}</div>}
         <ToastNotification toast={toast} />
       </>
     );
@@ -1168,9 +1203,9 @@ export default function App() {
           companyLogo={companyLogo}
           theme={theme}
         />
-        <Suspense fallback={<div className="loading-strip">Loading workspace...</div>}>
+        <Suspense fallback={<div className="loading-strip">{t('Loading workspace...')}</div>}>
         <div>
-          {isLoading && <div className="loading-strip">Loading latest cash book data...</div>}
+          {isLoading && <div className="loading-strip">{t('Loading latest cash book data...')}</div>}
           {pageError && <div className="error-banner">{pageError}</div>}
           {activeView === 'dashboard' && (
             <Dashboard
@@ -1461,7 +1496,7 @@ export default function App() {
         </Suspense>
       </main>
       <ReceiptModal transaction={receipt} companyName={companyName} dateDisplayFormat={dateDisplayFormat} onClose={() => setReceipt(null)} onPrint={printReceipt} />
-      {printPreviewOpen && <Suspense fallback={<div className="loading-strip">Loading print studio...</div>}><GlassPrintPreview
+      {printPreviewOpen && <Suspense fallback={<div className="loading-strip">{t('Loading print studio...')}</div>}><GlassPrintPreview
         open={printPreviewOpen}
         onClose={() => {
           setPrintPreviewOpen(false);
