@@ -1,8 +1,19 @@
 import { Banknote, Building2, Camera, CircleDollarSign, Clock3, Download, FileSpreadsheet, Printer, Search, Trash2, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { currency, csvCell, dateLabel } from '../utils/format';
 import { employeeSalarySnapshot } from '../utils/payroll';
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return String(str ?? '');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 const tabs = ['Overview', 'Employees', 'Salary Payments', 'Reports'];
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -52,6 +63,7 @@ export default function EmployeesSalary({
   companyName = 'BAWAR STAR PLASTIC INDUSTRY',
   companyLogo = ''
 }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('Overview');
   const [employeeForm, setEmployeeForm] = useState(emptyEmployee);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
@@ -283,34 +295,45 @@ export default function EmployeesSalary({
       {toast && <div className="success-banner">{toast}</div>}
       <header className="section-header glass-card salary-workspace-header">
         <div>
-          <p className="eyebrow">Employees & Salary</p>
-          <h3>Employee Payroll Management</h3>
-          <p>Add employees, pay monthly salaries, create Cash Out entries automatically, and print salary reports.</p>
+          <p className="eyebrow">{t('payroll.eyebrow')}</p>
+          <h3>{t('payroll.title')}</h3>
+          <p>{t('payroll.description')}</p>
         </div>
         <div className="section-actions">
-          <button className="ghost-btn" type="button" onClick={() => setActiveTab('Employees')}>Add Employee</button>
-          <button className="primary-btn" type="button" onClick={() => setActiveTab('Reports')}>Employees Salary Report</button>
+          <button className="ghost-btn" type="button" onClick={() => setActiveTab('Employees')}>{t('payroll.addEmployee')}</button>
+          <button className="primary-btn" type="button" onClick={() => setActiveTab('Reports')}>{t('payroll.salaryReport')}</button>
         </div>
       </header>
 
       <nav className="salary-tabs glass-card" aria-label="Employees and salary sections">
-        {tabs.map((tab) => <button key={tab} type="button" className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>{tab === 'Reports' ? 'Employees Salary Report' : tab}</button>)}
+        {tabs.map((tab) => {
+          let label = tab;
+          if (tab === 'Overview') label = t('payroll.overview');
+          else if (tab === 'Employees') label = t('payroll.employees');
+          else if (tab === 'Salary Payments') label = t('payroll.salaryPayments');
+          else if (tab === 'Reports') label = t('payroll.salaryReport');
+          return (
+            <button key={tab} type="button" className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>
+              {label}
+            </button>
+          );
+        })}
       </nav>
 
       {activeTab === 'Overview' && (
         <>
           <div className="salary-stat-grid">
-            <SalaryStat icon={UsersRound} label="Employees" value={employees.length} tone="blue" />
-            <SalaryStat icon={Building2} label="Departments" value={departments.length} tone="violet" />
-            <SalaryStat icon={Banknote} label="Paid This Month" value={currency(monthlySalaryPaid)} tone="green" />
-            <SalaryStat icon={Clock3} label="Remaining Salary" value={currency(pending)} tone="amber" />
+            <SalaryStat icon={UsersRound} label={t('payroll.employees')} value={employees.length} tone="blue" />
+            <SalaryStat icon={Building2} label={t('payroll.allDepartments')} value={departments.length} tone="violet" />
+            <SalaryStat icon={Banknote} label={t('payroll.totalPaid')} value={currency(monthlySalaryPaid)} tone="green" />
+            <SalaryStat icon={Clock3} label={t('payroll.totalRemaining')} value={currency(pending)} tone="amber" />
           </div>
           <div className="salary-overview-grid">
             <article className="glass-card salary-panel">
-              <div className="salary-panel-heading"><div><p className="eyebrow">Current Payroll</p><h3>Salary Activity</h3></div><CircleDollarSign size={24} /></div>
-              <div className="salary-activity-summary"><span>Salary payments recorded</span><strong>{report?.payments?.length ?? salaryTransactions.length}</strong></div>
+              <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.currentPayroll')}</p><h3>{t('payroll.salaryActivity')}</h3></div><CircleDollarSign size={24} /></div>
+              <div className="salary-activity-summary"><span>{t('payroll.paymentsRecorded')}</span><strong>{report?.payments?.length ?? salaryTransactions.length}</strong></div>
               <div className="salary-progress"><span style={{ width: summary.total_monthly_salary ? `${Math.min((summary.total_paid_this_month / summary.total_monthly_salary) * 100, 100)}%` : '0%' }} /></div>
-              <p className="salary-muted">Salary payments now create linked Cashbook Cash Out entries and update monthly balances immediately.</p>
+              <p className="salary-muted">{t('payroll.paymentsNote')}</p>
             </article>
             <EmployeeList employees={employees} transactions={transactions} reportRows={report?.rows} onPay={(row) => { setActiveTab('Reports'); setPayingRow(row); }} onEditEmployee={currentUser?.role === 'Administrator' ? handleEditEmployee : null} onEditSalary={currentUser?.role === 'Administrator' ? setEditingSalaryRow : null} onDeleteEmployee={currentUser?.role === 'Administrator' ? deleteEmployee : null} onChangeAvatar={currentUser?.role === 'Administrator' ? updateEmployeeAvatar : null} deletingEmployeeId={deletingEmployeeId} uploadingAvatarId={uploadingAvatarId} />
           </div>
@@ -320,21 +343,21 @@ export default function EmployeesSalary({
       {activeTab === 'Employees' && (
         <div className="salary-management-grid">
           <article className="glass-card salary-panel">
-            <div className="salary-panel-heading"><div><p className="eyebrow">Employee Management</p><h3>{editingEmployeeId ? 'Edit Employee' : 'Add Employee'}</h3></div></div>
+            <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.employeeManagement')}</p><h3>{editingEmployeeId ? t('payroll.edit') : t('payroll.addEmployee')}</h3></div></div>
             <form id="employeeForm" className="entry-form" onSubmit={submitEmployee}>
               <input name="fullName" value={employeeForm.full_name} onChange={(event) => setEmployeeForm({ ...employeeForm, full_name: event.target.value })} placeholder="Full Name" required />
               <input name="fatherName" value={employeeForm.father_name} onChange={(event) => setEmployeeForm({ ...employeeForm, father_name: event.target.value })} placeholder="Father Name" />
               <input name="phoneNumber" value={employeeForm.phone} onChange={(event) => setEmployeeForm({ ...employeeForm, phone: event.target.value })} placeholder="Phone Number" />
               <input name="position" value={employeeForm.position} onChange={(event) => setEmployeeForm({ ...employeeForm, position: event.target.value })} placeholder="Position / Job Title" required />
               <input name="department" value={employeeForm.department} onChange={(event) => setEmployeeForm({ ...employeeForm, department: event.target.value })} placeholder="Department" />
-              <label className="salary-month-field"><span>Joining Date</span><input name="joiningDate" type="date" value={employeeForm.joining_date} onChange={(event) => setEmployeeForm({ ...employeeForm, joining_date: event.target.value })} required /></label>
+              <label className="salary-month-field"><span>{t('payroll.joiningDate')}</span><input name="joiningDate" type="date" value={employeeForm.joining_date} onChange={(event) => setEmployeeForm({ ...employeeForm, joining_date: event.target.value })} required /></label>
               <input name="monthlySalary" type="number" min="0" step="0.01" value={employeeForm.monthly_salary} onChange={(event) => setEmployeeForm({ ...employeeForm, monthly_salary: event.target.value })} placeholder="Monthly Salary" required />
-              <select name="currency" value={employeeForm.currency} onChange={(event) => setEmployeeForm({ ...employeeForm, currency: event.target.value })}><option value="AFN">AFN</option><option value="USD">USD</option></select>
+              <select name="currency" value={employeeForm.currency} onChange={(event) => setEmployeeForm({ ...employeeForm, currency: event.target.value })}><option value="AFN">{t('payroll.afn')}</option><option value="USD">{t('payroll.usd')}</option></select>
               <textarea name="notes" value={employeeForm.notes} onChange={(event) => setEmployeeForm({ ...employeeForm, notes: event.target.value })} placeholder="Notes" />
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="primary-btn" type="submit" disabled={saving}>{saving ? 'Saving...' : (editingEmployeeId ? 'Update Employee' : 'Save Employee')}</button>
                 {editingEmployeeId && (
-                  <button className="ghost-btn" type="button" onClick={() => { setEmployeeForm(emptyEmployee); setEditingEmployeeId(null); }}>Cancel</button>
+                  <button className="ghost-btn" type="button" onClick={() => { setEmployeeForm(emptyEmployee); setEditingEmployeeId(null); }}>{t('payroll.cancel')}</button>
                 )}
               </div>
             </form>
@@ -345,7 +368,7 @@ export default function EmployeesSalary({
 
       {activeTab === 'Salary Payments' && (
         <article className="glass-card salary-panel">
-          <div className="salary-panel-heading"><div><p className="eyebrow">Payment History</p><h3>Salary Cash Out Records</h3></div><button className="primary-btn" type="button" onClick={() => setActiveTab('Reports')}>Pay Salary</button></div>
+          <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.paymentHistory')}</p><h3>{t('payroll.salaryCashOutRecords')}</h3></div><button className="primary-btn" type="button" onClick={() => setActiveTab('Reports')}>{t('payroll.paySalary')}</button></div>
           {salaryTransactions.length ? <div className="salary-payment-list">{salaryTransactions.slice().reverse().map((transaction) => <div className="salary-payment-row" key={transaction.id}><div><strong>{transaction.account_name}</strong><span>{transaction.detail}</span></div><div><strong>{currency(transaction.cash_out_afn)}</strong><span>{transaction.date}</span></div></div>)}</div> : <EmptyState title="No salary payments yet" body="Open the Employees Salary Report and use Pay Salary for the first payment." action="Open Report" onAction={() => setActiveTab('Reports')} />}
         </article>
       )}
@@ -396,11 +419,12 @@ export default function EmployeesSalary({
 }
 
 function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments, loading, error, onRefresh, onPay, onPrint, onPdf, onExcel, onEditSalary, onEditEmployee, onDeleteEmployee, deletingEmployeeId, salaryChanges, companyName, companyLogo }) {
+  const { t } = useTranslation();
   const years = Array.from({ length: 6 }, (_, index) => new Date().getFullYear() - 3 + index);
   return (
     <article className="glass-card salary-panel salary-report-workspace">
       <div className="salary-panel-heading">
-        <div><p className="eyebrow">Monthly Payroll</p><h3>Employees Salary Report</h3></div>
+        <div><p className="eyebrow">{t('payroll.monthlyPayroll')}</p><h3>{t('payroll.salaryReport')}</h3></div>
         <div className="salary-report-actions">
           <button className="ghost-btn" type="button" onClick={onPrint}><Printer size={18} /> Print Report</button>
           <button className="ghost-btn" type="button" onClick={onPdf}><Download size={18} /> Download PDF</button>
@@ -408,17 +432,17 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
         </div>
       </div>
       <div className="salary-report-summary-grid">
-        <SalaryMiniStat label="Total Employees" value={summary.total_employees} />
-        <SalaryMiniStat label="Total Payable Salary" value={currency(summary.total_payable_salary ?? summary.total_monthly_salary)} />
-        <SalaryMiniStat label="Total Paid This Month" value={currency(summary.total_paid_this_month)} tone="green" />
-        <SalaryMiniStat label="Total Remaining Salary" value={currency(summary.total_remaining_salary)} tone="amber" />
-        <SalaryMiniStat label="Fully Paid Employees" value={summary.fully_paid_employees} tone="green" />
-        <SalaryMiniStat label="Unpaid Employees" value={summary.unpaid_employees} tone="amber" />
+        <SalaryMiniStat label={t('payroll.totalEmployees')} value={summary.total_employees} />
+        <SalaryMiniStat label={t('payroll.totalPayable')} value={currency(summary.total_payable_salary ?? summary.total_monthly_salary)} />
+        <SalaryMiniStat label={t('payroll.totalPaid')} value={currency(summary.total_paid_this_month)} tone="green" />
+        <SalaryMiniStat label={t('payroll.totalRemaining')} value={currency(summary.total_remaining_salary)} tone="amber" />
+        <SalaryMiniStat label={t('payroll.fullyPaid')} value={summary.fully_paid_employees} tone="green" />
+        <SalaryMiniStat label={t('payroll.unpaid')} value={summary.unpaid_employees} tone="amber" />
       </div>
       <div className="salary-report-filters">
         <label><Search size={16} /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search employee name" /></label>
-        <select value={filters.department} onChange={(event) => setFilters({ ...filters, department: event.target.value })}><option value="">All Departments</option>{departments.map((department) => <option key={department} value={department}>{department}</option>)}</select>
-        <select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">All Status</option><option>Paid</option><option>Partial Paid</option><option>Unpaid</option><option>Advance</option></select>
+        <select value={filters.department} onChange={(event) => setFilters({ ...filters, department: event.target.value })}><option value="">{t('payroll.allDepartments')}</option>{departments.map((department) => <option key={department} value={department}>{department}</option>)}</select>
+        <select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">{t('payroll.allStatus')}</option><option value="Paid">{t('payroll.paid')}</option><option value="Partial Paid">{t('payroll.partialPaid')}</option><option value="Unpaid">{t('payroll.unpaidStatus')}</option><option value="Advance">{t('payroll.advance')}</option></select>
         <select value={filters.month} onChange={(event) => setFilters({ ...filters, month: Number(event.target.value) })}>{monthNames.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}</select>
         <select value={filters.year} onChange={(event) => setFilters({ ...filters, year: Number(event.target.value) })}>{years.map((year) => <option key={year} value={year}>{year}</option>)}</select>
         <button className="ghost-btn" type="button" onClick={onRefresh}>{loading ? 'Refreshing...' : 'Refresh'}</button>
@@ -426,7 +450,7 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
       {error && <div className="error-banner">{error}</div>}
       <div className="salary-report-table-wrap">
         <table className="salary-report-table">
-          <thead><tr><th>S.No</th><th>Employee ID</th><th>Employee Name</th><th>Department / Position</th><th>Total Payable</th><th>Paid Salary</th><th>Carry Forward</th><th>Payment Status</th><th>Last Payment Date</th><th>Action</th></tr></thead>
+          <thead><tr><th>S.No</th><th>{t('payroll.employeeId')}</th><th>{t('payroll.employeeName')}</th><th>{t('payroll.departmentPosition')}</th><th>{t('payroll.totalPayable')}</th><th>{t('payroll.paidSalary')}</th><th>{t('payroll.carryForward')}</th><th>{t('payroll.paymentStatus')}</th><th>{t('payroll.lastPaymentDate')}</th><th>{t('payroll.action')}</th></tr></thead>
           <tbody>
             {rows.map((row, index) => (
               <tr key={row.employee_id}>
@@ -439,7 +463,7 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
                 <td className="salary-remaining">{currency(row.remaining_salary)}</td>
                 <td><span className={`salary-status-badge ${row.payment_status.toLowerCase().replaceAll(' ', '-')}`}>{row.payment_status}</span></td>
                 <td>{row.last_payment_date ? dateLabel(row.last_payment_date) : '-'}</td>
-                <td><div className="salary-row-actions"><button className="primary-btn salary-action-btn" type="button" onClick={() => onPay(row)}>Pay Salary</button>{onEditEmployee && <button className="ghost-btn salary-action-btn" type="button" onClick={() => onEditEmployee(row)}>Edit</button>}{onEditSalary && <button className="ghost-btn salary-action-btn" type="button" onClick={() => onEditSalary(row)}>Edit Salary</button>}{onDeleteEmployee && <button className="ghost-btn salary-action-btn salary-delete-btn" type="button" disabled={deletingEmployeeId === Number(row.employee_id)} onClick={() => onDeleteEmployee(row)}><Trash2 size={15} /> {deletingEmployeeId === Number(row.employee_id) ? 'Deleting...' : 'Delete'}</button>}</div></td>
+                <td><div className="salary-row-actions"><button className="primary-btn salary-action-btn" type="button" onClick={() => onPay(row)}>{t('payroll.paySalary')}</button>{onEditEmployee && <button className="ghost-btn salary-action-btn" type="button" onClick={() => onEditEmployee(row)}>{t('payroll.edit')}</button>}{onEditSalary && <button className="ghost-btn salary-action-btn" type="button" onClick={() => onEditSalary(row)}>{t('payroll.editSalary')}</button>}{onDeleteEmployee && <button className="ghost-btn salary-action-btn salary-delete-btn" type="button" disabled={deletingEmployeeId === Number(row.employee_id)} onClick={() => onDeleteEmployee(row)}><Trash2 size={15} /> {deletingEmployeeId === Number(row.employee_id) ? 'Deleting...' : 'Delete'}</button>}</div></td>
               </tr>
             ))}
             {!rows.length && <tr><td colSpan="10"><EmptyState title="No salary report rows" body="Try changing the search, department, status, month, or year filter." action="Refresh" onAction={onRefresh} /></td></tr>}
@@ -457,6 +481,7 @@ function salaryPaymentInputValue(value) {
 }
 
 function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ amount: '', payment_date: new Date().toISOString().slice(0, 10), payment_method: 'cash', notes: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -517,7 +542,7 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
   return (
     <div className="modal-backdrop" role="presentation">
       <form className="glass-card salary-pay-modal" onSubmit={submit}>
-        <div className="salary-panel-heading"><div><p className="eyebrow">Salary Payment</p><h3>Pay Salary</h3></div><button className="ghost-btn" type="button" onClick={onClose}>Close</button></div>
+        <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.salaryPayment')}</p><h3>{t('payroll.paySalary')}</h3></div><button className="ghost-btn" type="button" onClick={onClose}>{t('payroll.close')}</button></div>
         <div className="salary-pay-grid">
           <ReadOnlyMetric label="Employee name" value={row.employee_name} />
           <ReadOnlyMetric label="Base monthly salary" value={currency(row.monthly_salary)} />
@@ -527,10 +552,10 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
           <ReadOnlyMetric label="Current carry forward" value={currency(currentCarryForward)} tone={currentCarryForward < 0 ? 'amber' : 'green'} />
           <ReadOnlyMetric label="After this payment" value={currency(closingCarryForward)} tone={closingCarryForward < 0 ? 'amber' : 'green'} />
         </div>
-        <label>Amount to pay now<input type="number" min="0" max={payableLimit} step="0.01" value={form.amount} onChange={(event) => updateAmount(event.target.value)} placeholder="0.00" autoFocus /></label>
-        <label>Payment date<input type="date" value={form.payment_date} onChange={(event) => setForm({ ...form, payment_date: event.target.value })} required /></label>
-        <label>Payment method<select value={form.payment_method} onChange={(event) => setForm({ ...form, payment_method: event.target.value })}><option value="cash">Cash</option><option value="bank">Bank</option><option value="hawala">Hawala</option><option value="other">Other</option></select></label>
-        <label>Notes<textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder={`Salary payment for ${getMonthName(month)} ${year}`} /></label>
+        <label>{t('payroll.amountToPay')}<input type="number" min="0" max={payableLimit} step="0.01" value={form.amount} onChange={(event) => updateAmount(event.target.value)} placeholder="0.00" autoFocus /></label>
+        <label>{t('payroll.paymentDate')}<input type="date" value={form.payment_date} onChange={(event) => setForm({ ...form, payment_date: event.target.value })} required /></label>
+        <label>{t('payroll.paymentMethod')}<select value={form.payment_method} onChange={(event) => setForm({ ...form, payment_method: event.target.value })}><option value="cash">{t('payroll.cash')}</option><option value="bank">{t('payroll.bank')}</option><option value="hawala">{t('payroll.hawala')}</option><option value="other">{t('payroll.other')}</option></select></label>
+        <label>{t('payroll.notes')}<textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder={`Salary payment for ${getMonthName(month)} ${year}`} /></label>
         {amount > 0 && closingCarryForward > 0 && <div className="salary-overpayment-warning"><Clock3 size={18} /><span>{currency(closingCarryForward)} will remain as arrears for next month.</span></div>}
         {error && <div className="error-banner">{error}</div>}
         <button className="primary-btn" type="submit" disabled={saving || payableLimit <= 0}>{saving ? 'Saving...' : 'Save Salary Payment'}</button>
@@ -540,6 +565,7 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
 }
 
 function EditEmployeeSalaryModal({ row, currentUser, onClose, onSave }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     new_salary: '',
     new_currency: row.currency || 'AFN',
@@ -577,24 +603,24 @@ function EditEmployeeSalaryModal({ row, currentUser, onClose, onSave }) {
   return (
     <div className="modal-backdrop" role="presentation">
       <form className="glass-card salary-pay-modal salary-edit-modal" onSubmit={submit}>
-        <div className="salary-panel-heading"><div><p className="eyebrow">Administrator Control</p><h3>Edit Employee Salary</h3></div><button className="ghost-btn" type="button" onClick={onClose}>Close</button></div>
+        <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.adminControl')}</p><h3>{t('payroll.editSalary')}</h3></div><button className="ghost-btn" type="button" onClick={onClose}>{t('payroll.close')}</button></div>
         <div className="salary-pay-grid">
           <ReadOnlyMetric label="Employee Name" value={row.employee_name} />
           <ReadOnlyMetric label="Employee ID" value={row.employee_code} />
           <ReadOnlyMetric label="Current Salary" value={currency(row.monthly_salary, row.currency)} />
           <ReadOnlyMetric label="Current Currency" value={row.currency || 'AFN'} />
         </div>
-        <label>New Salary<input type="number" min="0" step="0.01" value={form.new_salary} onChange={(event) => setForm({ ...form, new_salary: event.target.value })} required /></label>
-        <label>New Currency<select value={form.new_currency} onChange={(event) => setForm({ ...form, new_currency: event.target.value })}><option value="AFN">AFN</option><option value="USD">USD</option></select></label>
-        <label>Effective Date<input type="date" value={form.effective_date} onChange={(event) => setForm({ ...form, effective_date: event.target.value })} required /></label>
-        <label>Reason for Salary Change<input value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })} placeholder="Promotion, annual review, role change..." required /></label>
-        <label>Changed By<input value={`${currentUser?.full_name || 'Administrator'} (${currentUser?.role || 'Administrator'})`} readOnly /></label>
-        <label>Notes<textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder="Optional notes" /></label>
+        <label>{t('payroll.newSalary')}<input type="number" min="0" step="0.01" value={form.new_salary} onChange={(event) => setForm({ ...form, new_salary: event.target.value })} required /></label>
+        <label>{t('payroll.newCurrency')}<select value={form.new_currency} onChange={(event) => setForm({ ...form, new_currency: event.target.value })}><option value="AFN">{t('payroll.afn')}</option><option value="USD">{t('payroll.usd')}</option></select></label>
+        <label>{t('payroll.effectiveDate')}<input type="date" value={form.effective_date} onChange={(event) => setForm({ ...form, effective_date: event.target.value })} required /></label>
+        <label>{t('payroll.reasonForChange')}<input value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })} placeholder="Promotion, annual review, role change..." required /></label>
+        <label>{t('payroll.changedBy')}<input value={`${currentUser?.full_name || 'Administrator'} (${currentUser?.role || 'Administrator'})`} readOnly /></label>
+        <label>{t('payroll.notes')}<textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder="Optional notes" /></label>
         {error && <div className="error-banner">{error}</div>}
         <button className="primary-btn" type="submit" disabled={saving}>{saving ? 'Saving Salary Change...' : 'Save Salary Change'}</button>
         <div className="salary-history-list">
-          <div className="salary-panel-heading"><div><p className="eyebrow">Employee Profile</p><h3>Salary History</h3></div></div>
-          {history.length ? history.map((change) => <div className="salary-history-item" key={change.id}><strong>{currency(change.old_salary, change.old_currency)} → {currency(change.new_salary, change.new_currency)}</strong><span>Effective From: {dateLabel(change.effective_date)}</span><span>Reason: {change.reason}</span><span>Changed by {change.changed_by}</span></div>) : <p className="salary-muted">No previous salary changes.</p>}
+          <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.employeeProfile')}</p><h3>{t('payroll.salaryHistory')}</h3></div></div>
+          {history.length ? history.map((change) => <div className="salary-history-item" key={change.id}><strong>{currency(change.old_salary, change.old_currency)} → {currency(change.new_salary, change.new_currency)}</strong><span>{t('payroll.effectiveFrom')}{dateLabel(change.effective_date)}</span><span>{t('payroll.reason')}{change.reason}</span><span>{t('payroll.changedByPrefix')}{change.changed_by}</span></div>) : <p className="salary-muted">{t('payroll.noPreviousChanges')}</p>}
         </div>
       </form>
     </div>
@@ -602,6 +628,7 @@ function EditEmployeeSalaryModal({ row, currentUser, onClose, onSave }) {
 }
 
 function SalaryChangeHistoryReport({ changes = [], companyName, companyLogo }) {
+  const { t } = useTranslation();
   function download(format) {
     const rows = changes.map((change) => ({
       employee_name: change.employee_name,
@@ -627,15 +654,32 @@ function SalaryChangeHistoryReport({ changes = [], companyName, companyLogo }) {
   }
 
   function printHistory() {
-    const body = changes.map((change) => `<tr><td>${change.employee_name}</td><td>${currency(change.old_salary, change.old_currency)}</td><td>${currency(change.new_salary, change.new_currency)}</td><td>${change.effective_date}</td><td>${change.changed_by}</td><td>${change.reason}</td></tr>`).join('');
+    const body = changes.map((change) =>
+      '<tr><td>' + escapeHtml(change.employee_name) +
+      '</td><td>' + escapeHtml(currency(change.old_salary, change.old_currency)) +
+      '</td><td>' + escapeHtml(currency(change.new_salary, change.new_currency)) +
+      '</td><td>' + escapeHtml(change.effective_date) +
+      '</td><td>' + escapeHtml(change.changed_by) +
+      '</td><td>' + escapeHtml(change.reason) + '</td></tr>'
+    ).join('');
     const printWindow = window.open('', '_blank', 'width=1100,height=800');
     if (!printWindow) return;
-    printWindow.document.write(`<!doctype html><html><head><title>Salary Change History</title><style>@page{size:A4 portrait;margin:10mm}body{font-family:Arial;color:#111827}.header{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:12px}.logo{max-height:48px}table{width:100%;border-collapse:collapse;margin-top:18px;font-size:11px}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left}th{background:#eaf2ff;color:#1d4ed8}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:70px}.signatures div{border-top:1px solid #111;padding-top:8px;text-align:center}</style></head><body><div class="header"><div>${companyLogo ? `<img class="logo" src="${companyLogo}"/>` : ''}<h2>${companyName}</h2><strong>Salary Change History</strong></div><span>Generated: ${new Date().toLocaleString()}</span></div><table><thead><tr><th>Employee Name</th><th>Old Salary</th><th>New Salary</th><th>Effective Date</th><th>Changed By</th><th>Reason</th></tr></thead><tbody>${body}</tbody></table><div class="signatures"><div>Employee Signature</div><div>Accountant Signature</div><div>Manager Signature</div></div></body></html>`);
+    printWindow.document.write(
+      '<!doctype html><html><head><title>Salary Change History</title>' +
+      '<style>@page{size:A4 portrait;margin:10mm}body{font-family:Arial;color:#111827}.header{display:flex;justify-content:space-between;border-bottom:2px solid #2563eb;padding-bottom:12px}.logo{max-height:48px}table{width:100%;border-collapse:collapse;margin-top:18px;font-size:11px}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left}th{background:#eaf2ff;color:#1d4ed8}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:70px}.signatures div{border-top:1px solid #111;padding-top:8px;text-align:center}</style></head>' +
+      '<body><div class="header"><div>' +
+      (companyLogo ? ('<img class="logo" src="' + escapeHtml(companyLogo) + '"/>') : '') +
+      '<h2>' + escapeHtml(companyName) + '</h2>' +
+      '<strong>Salary Change History</strong></div><span>Generated: ' + new Date().toLocaleString() + '</span></div>' +
+      '<table><thead><tr><th>Employee Name</th><th>Old Salary</th><th>New Salary</th><th>Effective Date</th><th>Changed By</th><th>Reason</th></tr></thead>' +
+      '<tbody>' + body + '</tbody></table>' +
+      '<div class="signatures"><div>Employee Signature</div><div>Accountant Signature</div><div>Manager Signature</div></div></body></html>'
+    );
     printWindow.document.close();
     printWindow.print();
   }
 
-  return <section className="salary-change-report"><div className="salary-panel-heading"><div><p className="eyebrow">Audit Report</p><h3>Salary Change History</h3></div><div className="salary-report-actions"><button className="ghost-btn" type="button" onClick={printHistory}><Printer size={17} /> Print / PDF</button><button className="ghost-btn" type="button" onClick={() => download('csv')}>CSV</button><button className="ghost-btn" type="button" onClick={() => download('json')}>JSON</button><button className="ghost-btn" type="button" onClick={() => download('excel')}>Excel</button></div></div><div className="salary-report-table-wrap"><table className="salary-report-table salary-change-table"><thead><tr><th>Employee Name</th><th>Old Salary</th><th>New Salary</th><th>Effective Date</th><th>Changed By</th><th>Reason</th></tr></thead><tbody>{changes.map((change) => <tr key={change.id}><td>{change.employee_name}</td><td>{currency(change.old_salary, change.old_currency)}</td><td>{currency(change.new_salary, change.new_currency)}</td><td>{dateLabel(change.effective_date)}</td><td>{change.changed_by}</td><td>{change.reason}</td></tr>)}{!changes.length && <tr><td colSpan="6">No salary changes recorded.</td></tr>}</tbody></table></div></section>;
+  return <section className="salary-change-report"><div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.auditReport')}</p><h3>{t('payroll.salaryChangeHistory')}</h3></div><div className="salary-report-actions"><button className="ghost-btn" type="button" onClick={printHistory}><Printer size={17} /> Print / PDF</button><button className="ghost-btn" type="button" onClick={() => download('csv')}>{t('payroll.csv')}</button><button className="ghost-btn" type="button" onClick={() => download('json')}>JSON</button><button className="ghost-btn" type="button" onClick={() => download('excel')}>Excel</button></div></div><div className="salary-report-table-wrap"><table className="salary-report-table salary-change-table"><thead><tr><th>{t('payroll.employeeName')}</th><th>{t('payroll.oldSalary')}</th><th>{t('payroll.newSalary')}</th><th>{t('payroll.effectiveDate')}</th><th>{t('payroll.changedBy')}</th><th>{t('payroll.reasonLabel')}</th></tr></thead><tbody>{changes.map((change) => <tr key={change.id}><td>{change.employee_name}</td><td>{currency(change.old_salary, change.old_currency)}</td><td>{currency(change.new_salary, change.new_currency)}</td><td>{dateLabel(change.effective_date)}</td><td>{change.changed_by}</td><td>{change.reason}</td></tr>)}{!changes.length && <tr><td colSpan="6">{t('payroll.noSalaryChanges')}</td></tr>}</tbody></table></div></section>;
 }
 
 function SalaryMiniStat({ label, value, tone = 'blue' }) {
@@ -680,10 +724,11 @@ function EmployeeAvatar({ employee, onChangeAvatar, uploading }) {
 }
 
 function EmployeeList({ employees, transactions, reportRows = [], expanded = false, onPay, onEditSalary, onEditEmployee, onDeleteEmployee, onChangeAvatar, deletingEmployeeId, uploadingAvatarId }) {
+  const { t } = useTranslation();
   const rowByEmployee = new Map((reportRows || []).map((row) => [Number(row.employee_id), row]));
   return (
     <article className={`glass-card salary-panel ${expanded ? 'salary-panel-wide' : ''}`}>
-      <div className="salary-panel-heading"><div><p className="eyebrow">Employee Directory</p><h3>Salary Balances</h3></div></div>
+      <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.employeeDirectory')}</p><h3>{t('payroll.salaryBalances')}</h3></div></div>
       {employees.length ? <div className="salary-employee-list">{employees.map((employee) => {
         const fallback = employeeSalarySnapshot(employee, transactions);
         const row = rowByEmployee.get(Number(employee.id)) || {
@@ -707,16 +752,16 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
             <div>
               <strong>{employee.full_name}</strong>
               <span>{employee.position} · {employee.employee_code}</span>
-              <span>Payable: {(row.total_payable_salary ?? row.monthly_salary).toLocaleString()} {row.currency} · Paid: {row.paid_salary.toLocaleString()} {row.currency}</span>
+              <span>{t('payroll.payablePrefix')}{(row.total_payable_salary ?? row.monthly_salary).toLocaleString()} {row.currency} · Paid: {row.paid_salary.toLocaleString()} {row.currency}</span>
             </div>
             <div className="salary-balance">
-              <span>Carry forward</span>
+              <span>{t('payroll.carryForward')}</span>
               <strong>{row.remaining_salary.toLocaleString()} {row.currency}</strong>
             </div>
             <div className="salary-row-actions">
-              {onPay && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onPay(row)}>Pay Salary</button>}
-              {onEditEmployee && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onEditEmployee(employee)}>Edit</button>}
-              {onEditSalary && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onEditSalary(row)}>Edit Salary</button>}
+              {onPay && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onPay(row)}>{t('payroll.paySalary')}</button>}
+              {onEditEmployee && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onEditEmployee(employee)}>{t('payroll.edit')}</button>}
+              {onEditSalary && <button className="ghost-btn salary-list-pay" type="button" onClick={() => onEditSalary(row)}>{t('payroll.editSalary')}</button>}
               {onDeleteEmployee && <button className="ghost-btn salary-list-pay salary-delete-btn" type="button" disabled={deletingEmployeeId === Number(employee.id)} onClick={() => onDeleteEmployee({ ...row, id: employee.id, full_name: employee.full_name, employee_code: employee.employee_code })}><Trash2 size={15} /> {deletingEmployeeId === Number(employee.id) ? 'Deleting...' : 'Delete'}</button>}
             </div>
           </div>
@@ -735,28 +780,26 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
   const reportMonth = `${getMonthName(filters.month)} ${filters.year}`;
   const tableRows = rows.map((row, index) => {
     const statusClass = row.payment_status === 'Paid' ? 'status-paid' : row.payment_status === 'Partial Paid' ? 'status-partial' : row.payment_status === 'Advance' ? 'status-advance' : 'status-unpaid';
-    return `
-      <tr>
-        <td class="index">${index + 1}</td>
-        <td class="code">${row.employee_code}</td>
-        <td class="name">${row.employee_name}</td>
-        <td>${row.department || '-'} / ${row.position || '-'}</td>
-        <td class="money">${currency(row.total_payable_salary ?? row.monthly_salary)}</td>
-        <td class="money paid-money">${currency(row.paid_salary)}</td>
-        <td class="money due-money">${currency(row.remaining_salary)}</td>
-        <td style="text-align: center;"><span class="status-badge ${statusClass}">${row.payment_status}</span></td>
-        <td style="text-align: center; color: #4b5563; font-family: monospace;">${row.last_payment_date || '-'}</td>
-      </tr>
-    `;
+    return '<tr>' +
+      '<td class="index">' + (index + 1) + '</td>' +
+      '<td class="code">' + escapeHtml(row.employee_code) + '</td>' +
+      '<td class="name">' + escapeHtml(row.employee_name) + '</td>' +
+      '<td>' + escapeHtml(row.department || '-') + ' / ' + escapeHtml(row.position || '-') + '</td>' +
+      '<td class="money">' + escapeHtml(currency(row.total_payable_salary ?? row.monthly_salary)) + '</td>' +
+      '<td class="money paid-money">' + escapeHtml(currency(row.paid_salary)) + '</td>' +
+      '<td class="money due-money">' + escapeHtml(currency(row.remaining_salary)) + '</td>' +
+      '<td style="text-align: center;"><span class="status-badge ' + statusClass + '">' + escapeHtml(row.payment_status) + '</span></td>' +
+      '<td style="text-align: center; color: #4b5563; font-family: monospace;">' + escapeHtml(row.last_payment_date || '-') + '</td>' +
+      '</tr>';
   }).join('');
 
   const initials = (companyName || 'SKY').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'SKY';
 
   const logoHtml = companyLogo
-    ? `<img class="logo" src="${companyLogo}" id="report-logo" />`
-    : `<div class="logo logo-placeholder"><span>${initials}</span></div>`;
+    ? ('<img class="logo" src="' + escapeHtml(companyLogo) + '" id="report-logo" />')
+    : ('<div class="logo logo-placeholder"><span>' + escapeHtml(initials) + '</span></div>');
 
-  return `<!doctype html><html><head><title>Employees Salary Report – ${reportMonth}</title><style>
+  return `<!doctype html><html><head><title>Employees Salary Report – ${escapeHtml(reportMonth)}</title><style>
     /* ===== BASE STYLES (screen + print) ===== */
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -970,48 +1013,105 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
       letter-spacing: 0.3px;
       white-space: nowrap;
     }
-    .status-paid { color: #059669; background: #ecfdf5; }
-    .status-partial { color: #d97706; background: #fffbeb; }
-    .status-unpaid { color: #dc2626; background: #fef2f2; }
-    .status-advance { color: #7c3aed; background: #f5f3ff; }
+      text-align: center;
+      min-width: 65px;
+    }
 
-    /* --- Signatures --- */
+    .status-paid {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-partial {
+      background-color: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fef08a;
+    }
+
+    .status-advance {
+      background-color: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    .status-unpaid {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    tfoot tr {
+      background-color: #f9fafb !important;
+      font-weight: 800;
+    }
+
+    tfoot td {
+      border-top: 2px solid #3b82f6;
+      border-bottom: 2px solid #3b82f6;
+      font-size: 10px;
+    }
+
+    tfoot .money {
+      font-size: 11px;
+      color: #111827;
+    }
+
+    /* ===== SIGNATURE BLOCK ===== */
     .signatures {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 50px;
-      margin-top: 60px;
+      gap: 40px;
+      margin-top: 35px;
+      margin-bottom: 10px;
       page-break-inside: avoid;
     }
+
     .sig-line {
-      border-top: 1.5px solid #374151;
-      padding-top: 8px;
+      border-top: 1px solid #374151;
+      padding-top: 6px;
       text-align: center;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 600;
       color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
+    /* ===== FOOTER ===== */
     footer {
       display: flex;
       justify-content: space-between;
+      font-size: 8.5px;
+      color: #6b7280;
       border-top: 1px solid #e5e7eb;
-      margin-top: 10mm;
-      padding-top: 6px;
-      font-size: 9px;
-      color: #9ca3af;
+      padding-top: 8px;
+      margin-top: auto;
     }
 
     /* ===== PRINT OVERRIDES ===== */
     @media print {
+      body {
+        background-color: #ffffff !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #000000 !important;
+      }
+      .print-container {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        background-color: #ffffff !important;
+        background: #ffffff !important;
+      }
       @page {
         size: A4 landscape;
         margin: 10mm;
       }
       body { background: #fff !important; }
-      .print-container { max-width: none; box-shadow: none; }
-      .document-frame { padding: 2mm 4mm; }
-      tbody tr:nth-child(even) { background: #f9fafb !important; }
     }
 
     /* ===== SCREEN PREVIEW ===== */
@@ -1022,108 +1122,109 @@ function salaryReportHtml({ rows, summary, filters, companyName, companyLogo }) 
         border-radius: 8px;
       }
     }
-  </style></head><body><main class="print-container"><section class="document-frame">
-    <header class="report-header">
-      <div class="brand">
-        ${logoHtml}
-        <div class="report-title">
-          <h2>Official Payroll Report</h2>
-          <h1>${companyName}</h1>
-          <div class="subtitle">Employees Salary Report</div>
-        </div>
-      </div>
-      <div class="report-meta">
-        <strong>Report Term: ${reportMonth}</strong>
-        <div>Generated: ${generated}</div>
-        <div>Currency: AFN</div>
-      </div>
-    </header>
-    <p class="section-title">Summary Metrics</p>
-    <section class="summary-metrics">
-      <div class="metric-box">
-        <span class="metric-label">Total Employees</span>
-        <strong class="metric-value">${summary.total_employees}</strong>
-      </div>
-      <div class="metric-box">
-        <span class="metric-label">Total Payable</span>
-        <strong class="metric-value">${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</strong>
-      </div>
-      <div class="metric-box metric-box-green">
-        <span class="metric-label">Total Paid</span>
-        <strong class="metric-value">${currency(summary.total_paid_this_month)}</strong>
-      </div>
-      <div class="metric-box ${summary.total_remaining_salary > 0 ? 'metric-box-amber' : ''}">
-        <span class="metric-label">Total Carry Forward</span>
-        <strong class="metric-value">${currency(summary.total_remaining_salary)}</strong>
-      </div>
-      <div class="metric-box metric-box-green">
-        <span class="metric-label">Fully Paid</span>
-        <strong class="metric-value">${summary.fully_paid_employees}</strong>
-      </div>
-      <div class="metric-box ${summary.unpaid_employees > 0 ? 'metric-box-amber' : ''}">
-        <span class="metric-label">Unpaid</span>
-        <strong class="metric-value">${summary.unpaid_employees}</strong>
-      </div>
-    </section>
-    <p class="section-title">Salary Record Details</p>
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 35px; text-align: center;">S.No</th>
-          <th style="width: 75px;">Emp ID</th>
-          <th style="width: 140px;">Employee Name</th>
-          <th style="width: 170px;">Department / Position</th>
-          <th style="width: 95px; text-align: right;">Total Payable</th>
-          <th style="width: 95px; text-align: right;">Paid Salary</th>
-          <th style="width: 95px; text-align: right;">Carry Forward</th>
-          <th style="width: 90px; text-align: center;">Status</th>
-          <th style="width: 90px; text-align: center;">Last Payment</th>
-        </tr>
-      </thead>
-      <tbody>${tableRows}</tbody>
-      <tfoot>
-        <tr>
-          <td colspan="4" style="text-align: right; padding-right: 15px;">Totals</td>
-          <td class="money">${currency(summary.total_payable_salary ?? summary.total_monthly_salary)}</td>
-          <td class="money">${currency(summary.total_paid_this_month)}</td>
-          <td class="money">${currency(summary.total_remaining_salary)}</td>
-          <td colspan="2"></td>
-        </tr>
-      </tfoot>
-    </table>
-    <section class="signatures">
-      <div class="sig-line">Prepared By</div>
-      <div class="sig-line">Accountant Signature</div>
-      <div class="sig-line">Manager Signature</div>
-    </section>
-    <footer><span>Generated by Bawar Star Cash Book</span><span>${companyName}</span></footer>
-  </section>
-  </main>
-  <script>
-    // Wait for the logo image to load before printing, with a fallback timeout
-    (function() {
-      var logo = document.getElementById('report-logo');
-      function doPrint() {
-        window.focus();
-        window.print();
-      }
-      if (logo && !logo.complete) {
-        logo.onload = function() { setTimeout(doPrint, 200); };
-        logo.onerror = function() {
-          var initials = "${initials}";
-          var placeholder = document.createElement('div');
-          placeholder.className = 'logo logo-placeholder';
-          placeholder.innerHTML = '<span>' + initials + '</span>';
-          logo.parentNode.replaceChild(placeholder, logo);
-          setTimeout(doPrint, 200);
-        };
-        // Fallback: print after 3s even if image hasn't loaded
-        setTimeout(doPrint, 3000);
-      } else {
-        setTimeout(doPrint, 300);
-      }
-    })();
-  </script>
-  </body></html>`;
-}
+  `;
 
+  return '<!doctype html><html><head><title>Employees Salary Report – ' + escapeHtml(reportMonth) + '</title>' +
+    '<style>' + stylesheet + '</style></head>' +
+    '<body><main class="print-container"><section class="document-frame">' +
+    '    <header class="report-header">' +
+    '      <div class="brand">' +
+    logoHtml +
+    '        <div class="report-title">' +
+    '          <h2>Official Payroll Report</h2>' +
+    '          <h1>' + escapeHtml(companyName) + '</h1>' +
+    '          <div class="subtitle">Employees Salary Report</div>' +
+    '        </div>' +
+    '      </div>' +
+    '      <div class="report-meta">' +
+    '        <strong>Report Term: ' + escapeHtml(reportMonth) + '</strong>' +
+    '        <div>Generated: ' + escapeHtml(generated) + '</div>' +
+    '        <div>Currency: AFN</div>' +
+    '      </div>' +
+    '    </header>' +
+    '    <p class="section-title">Summary Metrics</p>' +
+    '    <section class="summary-metrics">' +
+    '      <div class="metric-box">' +
+    '        <span class="metric-label">Total Employees</span>' +
+    '        <strong class="metric-value">' + escapeHtml(summary.total_employees) + '</strong>' +
+    '      </div>' +
+    '      <div class="metric-box">' +
+    '        <span class="metric-label">Total Payable</span>' +
+    '        <strong class="metric-value">' + escapeHtml(currency(summary.total_payable_salary ?? summary.total_monthly_salary)) + '</strong>' +
+    '      </div>' +
+    '      <div class="metric-box metric-box-green">' +
+    '        <span class="metric-label">Total Paid</span>' +
+    '        <strong class="metric-value">' + escapeHtml(currency(summary.total_paid_this_month)) + '</strong>' +
+    '      </div>' +
+    '      <div class="metric-box ' + (summary.total_remaining_salary > 0 ? 'metric-box-amber' : '') + '">' +
+    '        <span class="metric-label">Total Carry Forward</span>' +
+    '        <strong class="metric-value">' + escapeHtml(currency(summary.total_remaining_salary)) + '</strong>' +
+    '      </div>' +
+    '      <div class="metric-box metric-box-green">' +
+    '        <span class="metric-label">Fully Paid</span>' +
+    '        <strong class="metric-value">' + escapeHtml(summary.fully_paid_employees) + '</strong>' +
+    '      </div>' +
+    '      <div class="metric-box ' + (summary.unpaid_employees > 0 ? 'metric-box-amber' : '') + '">' +
+    '        <span class="metric-label">Unpaid</span>' +
+    '        <strong class="metric-value">' + escapeHtml(summary.unpaid_employees) + '</strong>' +
+    '      </div>' +
+    '    </section>' +
+    '    <p class="section-title">Salary Record Details</p>' +
+    '    <table>' +
+    '      <thead>' +
+    '        <tr>' +
+    '          <th style="width: 35px; text-align: center;">S.No</th>' +
+    '          <th style="width: 75px;">Emp ID</th>' +
+    '          <th style="width: 140px;">Employee Name</th>' +
+    '          <th style="width: 170px;">Department / Position</th>' +
+    '          <th style="width: 95px; text-align: right;">Total Payable</th>' +
+    '          <th style="width: 95px; text-align: right;">Paid Salary</th>' +
+    '          <th style="width: 95px; text-align: right;">Carry Forward</th>' +
+    '          <th style="width: 90px; text-align: center;">Status</th>' +
+    '          <th style="width: 90px; text-align: center;">Last Payment</th>' +
+    '        </tr>' +
+    '      </thead>' +
+    '      <tbody>' + tableRows + '</tbody>' +
+    '      <tfoot>' +
+    '        <tr>' +
+    '          <td colspan="4" style="text-align: right; padding-right: 15px;">Totals</td>' +
+    '          <td class="money">' + escapeHtml(currency(summary.total_payable_salary ?? summary.total_monthly_salary)) + '</td>' +
+    '          <td class="money">' + escapeHtml(currency(summary.total_paid_this_month)) + '</td>' +
+    '          <td class="money">' + escapeHtml(currency(summary.total_remaining_salary)) + '</td>' +
+    '          <td colspan="2"></td>' +
+    '        </tr>' +
+    '      </tfoot>' +
+    '    </table>' +
+    '    <section class="signatures">' +
+    '      <div class="sig-line">Prepared By</div>' +
+    '      <div class="sig-line">Accountant Signature</div>' +
+    '      <div class="sig-line">Manager Signature</div>' +
+    '    </section>' +
+    '    <footer><span>Generated by Bawar Star Cash Book</span><span>' + escapeHtml(companyName) + '</span></footer>' +
+    '  </section>' +
+    '  </main>' +
+    '  <script>' +
+    '    (function() {' +
+    '      var logo = document.getElementById("report-logo");' +
+    '      function doPrint() {' +
+    '        window.focus();' +
+    '        window.print();' +
+    '      }' +
+    '      if (logo && !logo.complete) {' +
+    '        logo.onload = function() { setTimeout(doPrint, 200); };' +
+    '        logo.onerror = function() {' +
+    '          var initials = "' + escapeHtml(initials) + '";' +
+    '          var placeholder = document.createElement("div");' +
+    '          placeholder.className = "logo logo-placeholder";' +
+    '          placeholder.innerHTML = "<span>" + initials + "</span>";' +
+    '          logo.parentNode.replaceChild(placeholder, logo);' +
+    '          setTimeout(doPrint, 200);' +
+    '        };' +
+    '        setTimeout(doPrint, 3000);' +
+    '      } else {' +
+    '        setTimeout(doPrint, 300);' +
+    '      }' +
+    '    })();' +
+    '  </script>' +
+    '  </body></html>';
+}

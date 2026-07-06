@@ -22,6 +22,9 @@
   --success: #22c55e;
   --danger: #ef4444;
   --border: rgba(59, 130, 246, 0.22);
+  --border-muted: rgba(59, 130, 246, 0.18);
+  --border-soft: rgba(59, 130, 246, 0.16);
+  --accent-focus: rgba(59, 130, 246, 0.38);
   --shadow: 0 24px 70px rgba(2, 6, 18, 0.65);
 }
 
@@ -47,6 +50,9 @@ body.light {
   --success: #16a34a;
   --danger: #dc2626;
   --border: rgba(37, 99, 235, 0.16);
+  --border-muted: rgba(37, 99, 235, 0.13);
+  --border-soft: rgba(37, 99, 235, 0.11);
+  --accent-focus: rgba(37, 99, 235, 0.38);
   --shadow: 0 22px 60px rgba(15, 23, 42, 0.10);
 }
 
@@ -155,7 +161,7 @@ h1, h2, h3, p { margin: 0; }
 .topbar-actions, .section-actions, .filters, .backup-actions, .action-grid { display: flex; gap: 10px; flex-wrap: wrap; }
 .primary-btn { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25); }
 .primary-btn.danger, .danger-btn { background: linear-gradient(120deg, var(--danger), #ef476f); color: white; }
-.ghost-btn { background: var(--glass-bg); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.ghost-btn { background: var(--glass-bg); color: var(--text); border: 1px solid var(--glass-border); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
   .secondary-btn { background: rgba(37, 99, 235, 0.08); color: var(--text); border: 1px solid rgba(37, 99, 235, 0.18); }
 .action-btn.success { background: linear-gradient(120deg, rgba(32, 201, 151, 0.25), rgba(0, 179, 137, 0.2)); color: var(--success); }
 .action-btn.danger { background: linear-gradient(120deg, rgba(255, 93, 122, 0.22), rgba(255, 81, 122, 0.18)); color: var(--danger); }
@@ -443,7 +449,7 @@ body.light .table-card.fullscreen-fallback th.col-actions {
 .accounting-table td {
   padding: 8px 9px;
   vertical-align: middle;
-  border-bottom-color: color-mix(in srgb, var(--border) 84%, transparent);
+  border-bottom-color: var(--border-soft);
 }
 
 .accounting-table th {
@@ -532,7 +538,7 @@ body.light .accounting-table tbody tr.opening-balance-row {
   min-height: 28px;
   padding: 5px 8px;
   align-items: flex-start;
-  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border: 1px solid var(--border-muted);
   border-radius: 6px;
   background: rgba(148, 163, 184, .08);
 }
@@ -2863,7 +2869,7 @@ body::before {
 @media (max-width: 980px) {
   .sidebar {
     width: auto;
-    min-height: auto;
+    min-height: 0;
     margin: 12px;
   }
 
@@ -2925,7 +2931,7 @@ body::before {
   }
 
   .premium-print-preview {
-    min-height: auto;
+    min-height: 0;
     padding: 0;
     border-radius: 0;
     box-shadow: none;
@@ -2959,7 +2965,7 @@ body::before {
 
   .a4-paper {
     width: 281mm;
-    min-height: auto;
+    min-height: 0;
     padding: 0;
     border-radius: 0;
     box-shadow: none;
@@ -3534,7 +3540,7 @@ body::after,
 
   .flagship-a4-paper {
     width: 281mm !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     padding: 0 !important;
     transform: none !important;
     box-shadow: none !important;
@@ -3960,7 +3966,7 @@ body::after,
     width: 281mm !important;
     min-width: 281mm !important;
     max-width: 281mm !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     transform: none !important;
@@ -4088,7 +4094,6 @@ body::after,
     width: 100%;
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
   }
 
   body,
@@ -4122,7 +4127,7 @@ body::after,
   }
 
   :focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    outline: 3px solid var(--accent-focus);
     outline-offset: 2px;
   }
 
@@ -4293,7 +4298,6 @@ body::after,
     overflow-x: auto;
     overflow-y: auto;
     overscroll-behavior-inline: contain;
-    -webkit-overflow-scrolling: touch;
     scrollbar-gutter: stable;
   }
 
@@ -6226,7 +6230,7 @@ body:not(.light) .sidebar-collapse-toggle {
     width: 100% !important;
     max-width: 281mm !important;
     min-width: 0 !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     height: auto !important;
     margin: 0 auto !important;
     padding: 0 !important;
@@ -6725,7 +6729,7 @@ body:not(.light) .ledger-screen-table tbody tr:nth-child(even) {
   }
 
   .ledger-create-panel {
-    min-height: auto;
+    min-height: 0;
   }
 
   .account-list {
@@ -8144,6 +8148,96 @@ button:focus-visible,
   @page {
     size: A4 portrait;
     margin: 12mm;
+  }
+
+  @page landscape-layout {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  .print-document-cashbook,
+  .print-document-ledger,
+  .print-document-report,
+  .print-report {
+    page: landscape-layout !important;
+  }
+
+  /* Universal reset to prevent box-shadows/borders from translating to black outlines during print */
+  .print-container,
+  .print-document,
+  .print-report,
+  .report-preview-card,
+  .a4-paper,
+  .flagship-a4-paper,
+  .premium-print-preview,
+  .print-preview-overlay,
+  .print-workspace-shell {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  /* Dynamically style the summary metrics in print */
+  .print-metric-green strong {
+    color: #16a34a !important;
+  }
+
+  .print-metric-red strong {
+    color: #dc2626 !important;
+  }
+
+  /* Optimized column widths for Cashbook table */
+  .print-table-cashbook th:nth-child(1),
+  .print-table-cashbook td:nth-child(1) { width: 3% !important; }   /* S.No */
+  .print-table-cashbook th:nth-child(2),
+  .print-table-cashbook td:nth-child(2) { width: 11% !important; }  /* Date */
+  .print-table-cashbook th:nth-child(3),
+  .print-table-cashbook td:nth-child(3) { width: 17% !important; }  /* Account */
+  .print-table-cashbook th:nth-child(4),
+  .print-table-cashbook td:nth-child(4) { width: 22% !important; }  /* Detail */
+  .print-table-cashbook th:nth-child(5),
+  .print-table-cashbook td:nth-child(5) { width: 8% !important; }   /* Cash In AFN */
+  .print-table-cashbook th:nth-child(6),
+  .print-table-cashbook td:nth-child(6) { width: 8% !important; }   /* Cash Out AFN */
+  .print-table-cashbook th:nth-child(7),
+  .print-table-cashbook td:nth-child(7) { width: 6.5% !important; } /* USD In */
+  .print-table-cashbook th:nth-child(8),
+  .print-table-cashbook td:nth-child(8) { width: 6.5% !important; } /* USD Out */
+  .print-table-cashbook th:nth-child(9),
+  .print-table-cashbook td:nth-child(9) { width: 5% !important; }   /* Rate */
+  .print-table-cashbook th:nth-child(10),
+  .print-table-cashbook td:nth-child(10) { width: 12% !important; } /* Balance */
+  .print-table-cashbook th:nth-child(11),
+  .print-table-cashbook td:nth-child(11) { width: 8% !important; }  /* Type */
+
+  /* Optimized column widths for Ledger table */
+  .print-table-ledger th:nth-child(1),
+  .print-table-ledger td:nth-child(1) { width: 3% !important; }   /* SN */
+  .print-table-ledger th:nth-child(2),
+  .print-table-ledger td:nth-child(2) { width: 11% !important; }  /* Date */
+  .print-table-ledger th:nth-child(3),
+  .print-table-ledger td:nth-child(3) { width: 8% !important; }   /* TX No */
+  .print-table-ledger th:nth-child(4),
+  .print-table-ledger td:nth-child(4) { width: 20% !important; }  /* Detail */
+  .print-table-ledger th:nth-child(5),
+  .print-table-ledger td:nth-child(5) { width: 8.5% !important; } /* Cash In */
+  .print-table-ledger th:nth-child(6),
+  .print-table-ledger td:nth-child(6) { width: 8.5% !important; } /* Cash Out */
+  .print-table-ledger th:nth-child(7),
+  .print-table-ledger td:nth-child(7) { width: 11% !important; }  /* Balance */
+  .print-table-ledger th:nth-child(8),
+  .print-table-ledger td:nth-child(8) { width: 6.5% !important; } /* USD In */
+  .print-table-ledger th:nth-child(9),
+  .print-table-ledger td:nth-child(9) { width: 6.5% !important; } /* USD Out */
+  .print-table-ledger th:nth-child(10),
+  .print-table-ledger td:nth-child(10) { width: 5% !important; }  /* Rate */
+  .print-table-ledger th:nth-child(11),
+  .print-table-ledger td:nth-child(11) { width: 12% !important; } /* Note */
+
+  /* Ensure alternating zebra striping is retained in PDF/print output */
+  .print-data-table tbody tr:nth-child(even) {
+    background-color: #f8fafc !important;
   }
 
   body,
