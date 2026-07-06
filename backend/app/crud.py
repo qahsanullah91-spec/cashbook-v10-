@@ -803,6 +803,7 @@ def import_backup(db: Session, payload: dict, replace_all: bool = False) -> dict
         db.query(models.Account).delete()
         db.query(models.Setting).delete()
         db.commit()
+        db.expunge_all()
         _ensure_settings(db)
     if settings_data:
         update_settings(db, schemas.SettingUpdate(**settings_data))
@@ -971,6 +972,7 @@ def clear_all(db: Session) -> dict:
     db.query(models.Account).delete()
     db.query(models.Setting).delete()
     db.commit()
+    db.expunge_all()
     _ensure_settings(db)
     db.add(models.BackupLog(
         backup_name=f"cashbook-clear-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
