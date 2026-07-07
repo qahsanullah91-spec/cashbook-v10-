@@ -14,19 +14,19 @@ test('cash book print CSS uses A4 landscape printable width and content-driven p
 
 test('cash book printable table includes the required accounting columns', () => {
   for (const label of [
-    'S.No',
-    'Date',
-    'Account / Person / Company',
-    'Detail',
-    'Cash In AFN',
-    'Cash Out AFN',
-    'USD In',
-    'USD Out',
-    'Rate',
-    'Balance',
-    'Type'
+    'print.sNo',
+    'print.date',
+    'print.accountPersonCompany',
+    'print.detail',
+    'print.cashInAfn',
+    'print.cashOutAfn',
+    'print.usdIn',
+    'print.usdOut',
+    'print.rate',
+    'print.balance',
+    'print.type'
   ]) {
     assert.match(documentSource, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
-  assert.match(documentSource, /Jalali:/);
+  assert.match(documentSource, /print\.jalali/);
 });
