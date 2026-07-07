@@ -43,6 +43,10 @@ def restore_backup_from_file(backup_file: str, replace_all: bool = True) -> dict
         print(f"Restoring backup (replace_all={replace_all})...")
         result = crud.import_backup(db, backup_data, replace_all=replace_all)
         print("Backup restoration completed successfully!")
+        
+        # Ensure default admin user exists
+        _ensure_default_admin(db)
+        
         return result
     except Exception as e:
         print(f"Error during backup restoration: {e}")
@@ -50,6 +54,30 @@ def restore_backup_from_file(backup_file: str, replace_all: bool = True) -> dict
         raise
     finally:
         db.close()
+
+
+def _ensure_default_admin(db):
+    """Ensure a default admin user exists."""
+    admin_exists = db.query(models.User).filter(
+        models.User.username == "admin"
+    ).first()
+    
+    if admin_exists:
+        return
+    
+    from app.routes.auth import hash_password, TEMPORARY_DEFAULT_PASSWORD
+    
+    admin = models.User(
+        username="admin",
+        full_name="Administrator",
+        password_hash=hash_password(TEMPORARY_DEFAULT_PASSWORD),
+        role="Administrator",
+        is_active=True,
+        must_change_password=True,
+    )
+    db.add(admin)
+    db.commit()
+    print(f"Created default admin user. Initial password: {TEMPORARY_DEFAULT_PASSWORD}")
 
 
 def main():
